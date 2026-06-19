@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { OpenAI } from 'openai';
+import Groq from 'groq-sdk';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 const getSystemPrompt = (voiceTone: string, dialect: string): string => {
@@ -94,9 +94,9 @@ export async function POST(request: NextRequest) {
       .order('sequence_number', { ascending: true })
       .limit(20);
 
-    const messagesForLLM: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: getSystemPrompt(voiceTone, dialect) },
-    ];
+    const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
+  { role: 'system', content: getSystemPrompt(voiceTone, dialect) },
+];
 
     if (historyMessages && historyMessages.length > 0) {
       historyMessages.forEach((msg) => {
@@ -123,12 +123,12 @@ export async function POST(request: NextRequest) {
       console.error('Error saving user message:', saveUserError);
     }
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: messagesForLLM,
-      temperature: 0.8,
-      max_tokens: 1500,
-    });
+    const completion = await groq.chat.completions.create({
+  model: 'llama-3.3-70b-versatile',  // أو أي نموذج متوفر على Groq
+  messages: messagesForLLM,
+  temperature: 0.8,
+  max_tokens: 1500,
+});
 
     const aiResponse = completion.choices[0]?.message?.content || '';
 
