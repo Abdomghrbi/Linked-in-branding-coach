@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     }
 
     const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: 'allam-2-7b',
       messages: messagesForLLM,
       temperature: 0.8,
       max_tokens: 1500,
