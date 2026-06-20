@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import Groq from 'groq-sdk';
 
+export const dynamic = 'force-dynamic';
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
@@ -11,7 +13,7 @@ const getSystemPrompt = (voiceTone: string, dialect: string): string => {
     formal: 'تحدث بلغة رسمية مهنية، استخدم مصطلحات دقيقة، وتجنب العامية.',
     friendly: 'تحدث بلغة ودية دافئة، كأنك صديق مقرب يقدم نصيحة صادقة.',
     challenging: 'تحدث بلغة تحفيزية وتحدّية، دفّع المستخدم للخروج من منطقة الراحة.',
-    inspirational: 'مسودة بلغة ملهمة، استخدم قصصاً ومواقف تحفز المستخدم.',
+    inspirational: 'تحدث بلغة ملهمة، استخدم قصصاً ومواقف تحفز المستخدم.',
   };
 
   const dialectInstructions: Record<string, string> = {
@@ -25,7 +27,6 @@ const getSystemPrompt = (voiceTone: string, dialect: string): string => {
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
-
 
 قواعدك الذهبية:
 1. لا تقدم كلاماً عشوائياً فوراً، اسأل أولاً، افهم السياق، ناقش مع المستخدم.
@@ -50,15 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient();
-   // const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-   // if (authError || !user) {
-   //   return NextResponse.json(
-      //  { error: 'يجب تسجيل الدخول' },
-       // { status: 401 }
-     // );
     const user = { id: '4a97bf17-7513-4377-b6b5-90f72cc43120', email: 'test@test.com' };
-     
 
     const { data: userData } = await supabase
       .from('users')
@@ -96,8 +89,8 @@ export async function POST(request: NextRequest) {
       .limit(20);
 
     const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
-  { role: 'system', content: getSystemPrompt(voiceTone, dialect) },
-];
+      { role: 'system', content: getSystemPrompt(voiceTone, dialect) },
+    ];
 
     if (historyMessages && historyMessages.length > 0) {
       historyMessages.forEach((msg) => {
@@ -125,11 +118,11 @@ export async function POST(request: NextRequest) {
     }
 
     const completion = await groq.chat.completions.create({
-  model: 'llama-3.3-70b-versatile',  // أو أي نموذج متوفر على Groq
-  messages: messagesForLLM,
-  temperature: 0.8,
-  max_tokens: 1500,
-});
+      model: 'llama-3.3-70b-versatile',
+      messages: messagesForLLM,
+      temperature: 0.8,
+      max_tokens: 1500,
+    });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
 
@@ -191,4 +184,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-      }
+}
