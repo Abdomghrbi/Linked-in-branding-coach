@@ -33,7 +33,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         onClick={() => setShowInfo(!showInfo)}
         className="text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
       >
-        {showInfo ? 'إخفاء' : 'عن أساعدك</button>
+        {showInfo ? 'إخفاء' : 'عن المستشار'}</button>
 
       {showInfo && (
         <div className="absolute top-16 left-4 right-4 bg-white border rounded-xl shadow-xl p-4 z-50 max-w-sm mr-auto">
