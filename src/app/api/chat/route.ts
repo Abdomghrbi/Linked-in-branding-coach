@@ -12,8 +12,8 @@ const getSystemPrompt = (voiceTone: string, dialect: string): string => {
   const toneInstructions: Record<string, string> = {
     formal: 'تحدث بلغة رسمية مهنية، استخدم مصطلحات دقيقة، وتجنب العامية.',
     friendly: 'تحدث بلغة ودية دافئة، كأنك صديق مقرب يقدم نصيحة صادقة.',
-    challenging: 'تحدث بلغة تحفيزية وتحدّية، دفّع المستخدم للخروج من منطقة الراحة.',
-    inspirational: 'تحدث بلغة ملهمة، استخدم قصصاً ومواقف تحفز المستخدم.',
+    challenging: 'تحدث بلغة تحفيزية ودفّع، إدفّع المستخدم للتحدث براحته المطلقة.',
+    inspirational: 'تحدث بلغة ملهمة، استخدم أمثلة ومواقف تحفز المستخدم.',
   };
 
   const dialectInstructions: Record<string, string> = {
@@ -22,8 +22,7 @@ const getSystemPrompt = (voiceTone: string, dialect: string): string => {
     egyptian: 'استخدم اللهجة المصرية العامية.',
     levantine: 'استخدم اللهجة الشامية العامية.',
   };
-
-  return `أنت "مستشار بناء العلامة الشخصية" — خبير بخبرة 15 عاماً في التسويق المهني على LinkedIn.
+  return `أنت "مستشار شخصي لبناء العلامة الشخصية" — خبير بخبرة 15 عاماً في التسويق المهني على LinkedIn.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
