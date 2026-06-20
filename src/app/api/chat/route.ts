@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+'استخدم { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import Groq from 'groq-sdk';
 
@@ -17,7 +17,7 @@ const getSystemPrompt = (voiceTone: string, dialect: string): string => {
   };
 
   const dialectInstructions: Record<string, string> = {
-    fusha: 'استخدم اللغة العربية الفصحى بالكامل.',
+    fusha: 'استخدم اللغة العربية الفصحى بالكامل. وتجنب الأخطاء الإملائية وتجنب حشو كلمات إنجليزية بين الكلمات العربية',
     gulf: 'استخدم اللهجة الخليجية العامية.',
     egyptian: 'استخدم اللهجة المصرية العامية.',
     levantine: 'استخدم اللهجة الشامية العامية.',
