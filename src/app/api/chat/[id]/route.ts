@@ -13,7 +13,7 @@ export async function GET(
     // للاختبار - user وهمي
     const user = { id: '4a97bf17-7513-4377-b6b5-90f72cc43120' };
     
-    // للإنتاج - فعّل هاد:
+    // للإنتاج :
     // const { data: { user } } = await supabase.auth.getUser();
     // if (!user) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
