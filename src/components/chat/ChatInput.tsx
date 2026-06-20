@@ -57,7 +57,7 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
             placeholder="اكتب رسالتك هنا..."
             rows={1}
             disabled={disabled || loading}
-            className="w-full resize-none rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400 min-h-[48px] max-h-[200px]"
+            className="w-full resize-none rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400 min-h-[50px] max-h-[150px]"
             dir="rtl"
           />
         </div>
