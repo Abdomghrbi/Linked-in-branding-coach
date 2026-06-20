@@ -116,10 +116,10 @@ export async function POST(request: NextRequest) {
     }
 
     const completion = await groq.chat.completions.create({
-      model: 'allam-2-7b',
+      model: 'llama-3.3-70b-versatile',
       messages: messagesForLLM,
       temperature: 0.2,
-      max_tokens: 500,
+      max_tokens: 400,
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
