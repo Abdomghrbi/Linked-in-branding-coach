@@ -12,7 +12,7 @@ const getSystemPrompt = (voiceTone: string, dialect: string): string => {
   const toneInstructions: Record<string, string> = {
     formal: 'تحدث بلغة رسمية مهنية، استخدم مصطلحات دقيقة، وتجنب العامية.',
     friendly: 'تحدث بلغة ودية دافئة، كأنك صديق مقرب يقدم نصيحة صادقة.',
-    challenging: 'تحدث بلغة تحفيزية ودفّع، إدفّع المستخدم للتحدث براحته المطلقة.',
+    challenging: 'تحدث بلغة تحفيزية ، إدفّع المستخدم للتحدث براحته المطلقة.',
     inspirational: 'تحدث بلغة ملهمة، استخدم أمثلة ومواقف تحفز المستخدم.',
   };
 
