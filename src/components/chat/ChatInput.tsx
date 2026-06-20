@@ -48,7 +48,7 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
         </button>
 
         {/* Textarea */}
-        <div className="flex-1 relative">
+        <div className="w-full resize-none rounded-xl px-4 py-3.5 text-sm">
           <textarea
             ref={textareaRef}
             value={input}
