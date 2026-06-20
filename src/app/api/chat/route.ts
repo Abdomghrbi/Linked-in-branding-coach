@@ -118,8 +118,8 @@ export async function POST(request: NextRequest) {
     const completion = await groq.chat.completions.create({
       model: 'allam-2-7b',
       messages: messagesForLLM,
-      temperature: 0.6,
-      max_tokens: 1000,
+      temperature: 0.2,
+      max_tokens: 500,
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
