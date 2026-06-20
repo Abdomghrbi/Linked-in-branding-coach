@@ -26,7 +26,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
         
         <div>
           <h1 className="font-bold text-gray-900 text-lg leading-tight">مستشار العلامة الشخصية</h1>
-          <p className="text-xs text-gray-500">خبير LinkedIn بخبرة 15 عاماً</p>
         </div>
       </div>
 
@@ -34,14 +33,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
         onClick={() => setShowInfo(!showInfo)}
         className="text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
       >
-        {showInfo ? 'إخفاء' : 'عن المستشار'}
-      </button>
+        {showInfo ? 'إخفاء' : 'عن أساعدك</button>
 
       {showInfo && (
         <div className="absolute top-16 left-4 right-4 bg-white border rounded-xl shadow-xl p-4 z-50 max-w-sm mr-auto">
           <p className="text-sm text-gray-600 leading-relaxed">
             أنا مستشارك الشخصي لبناء علامتك المهنية على LinkedIn. 
-            أساعدك تحول أفكارك إلى محتوى مهني ذو تأثير.
+            أساعدك بتحويل أفكارك إلى محتوى مهني ذو تأثير.
           </p>
         </div>
       )}
