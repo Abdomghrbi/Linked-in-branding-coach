@@ -11,7 +11,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [showInfo, setShowInfo] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-3">
         <button 
           onClick={onMenuClick}
@@ -43,6 +43,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </p>
         </div>
       )}
-    </header>
+    </div>
   );
 }
