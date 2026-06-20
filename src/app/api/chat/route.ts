@@ -10,14 +10,14 @@ const groq = new Groq({
 
 const getSystemPrompt = (voiceTone: string, dialect: string): string => {
   const toneInstructions: Record<string, string> = {
-    formal: 'تحدث بلغة رسمية مهنية، استخدم مصطلحات دقيقة، وتجنب العامية.',
-    friendly: 'تحدث بلغة ودية دافئة، كأنك صديق مقرب يقدم نصيحة صادقة.',
+    formal: 'تحدث بلغة رسمية مهنية، استخدم مصطلحات دقيقة.',
+    friendly: 'تحدث بلغة ودية ، كأنك صديق يقدم نصيحة صادقة.',
     challenging: 'تحدث بلغة تحفيزية ، إدفّع المستخدم للتحدث براحته المطلقة.',
     inspirational: 'تحدث بلغة ملهمة، استخدم أمثلة ومواقف تحفز المستخدم.',
   };
 
   const dialectInstructions: Record<string, string> = {
-    fusha: 'استخدم اللغة العربية الفصحى بالكامل. وتجنب الأخطاء الإملائية ',
+    fusha: 'استخدم اللغة العربية ذاتتجنب الأخطاء الإملائية ',
     gulf: 'استخدم اللهجة الخليجية العامية.',
     egyptian: 'استخدم اللهجة المصرية العامية.',
     levantine: 'استخدم اللهجة الشامية العامية.',
@@ -128,13 +128,13 @@ export async function POST(request: NextRequest) {
     let generatedPost = null;
 
     if (
-      aiResponse.includes('مسودة المنشور') ||
+      aiResponse.includes('مسوَدّة') ||
       aiResponse.includes('---') ||
       aiResponse.includes('#')
     ) {
       contentType = 'post_draft';
       generatedPost = { raw: aiResponse, extracted_at: new Date().toISOString() };
-    } else if (aiResponse.includes('التفكير العميق') || aiResponse.includes('💡')) {
+    } else if (aiResponse.includes('نصيحة') || aiResponse.includes('💡')) {
       contentType = 'tips';
     }
 
