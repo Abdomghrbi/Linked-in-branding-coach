@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       .select('role, content, content_type')
       .eq('chat_id', currentChatId)
       .order('sequence_number', { ascending: true })
-      .limit(20);
+      .limit(50);
 
     const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: 'system', content: getSystemPrompt(voiceTone, dialect) },
@@ -118,8 +118,8 @@ export async function POST(request: NextRequest) {
     const completion = await groq.chat.completions.create({
       model: 'allam-2-7b',
       messages: messagesForLLM,
-      temperature: 0.8,
-      max_tokens: 1500,
+      temperature: 0.6,
+      max_tokens: 1000,
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     ) {
       contentType = 'post_draft';
       generatedPost = { raw: aiResponse, extracted_at: new Date().toISOString() };
-    } else if (aiResponse.includes('نصيحة') || aiResponse.includes('💡')) {
+    } else if (aiResponse.includes('التفكير العميق') || aiResponse.includes('💡')) {
       contentType = 'tips';
     }
 
