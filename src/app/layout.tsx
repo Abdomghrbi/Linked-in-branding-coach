@@ -1,3 +1,5 @@
+import './globals.css'
+
 export const metadata = {
   title: 'مستشار العلامة الشخصية',
   description: 'خبير LinkedIn بخبرة 15 عاماً',
@@ -6,7 +8,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl">
-      <body className="antialiased bg-gray-50">{children}</body>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
