@@ -169,12 +169,12 @@ export default function ChatPage() {
               </div>
               
               <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-                مرحباً! أنا مستشارك الشخصي
+                مرحباً أنا مستشارك الشخصي
               </h2>
               <p className="text-gray-500 text-center mb-8 leading-relaxed">
-                خبير LinkedIn بخبرة 15 عاماً. أساعدك تحول أفكارك إلى محتوى مهني ذو تأثير.
+                  أساعدك بتحويل أفكارك إلى محتوى مهني واضح وجذاب.
                 <br />
-                خبرني عن تجربتك أو فكرتك ونبلش سواً.
+                أخبرني عن تجربتك أو فكرتك، هيا نبدأ...
               </p>
 
               <SuggestedPrompts onSelect={sendMessage} />
