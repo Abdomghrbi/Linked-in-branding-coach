@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
        // { status: 401 }
      // );
     const user = { id: '4a97bf17-7513-4377-b6b5-90f72cc43120', email: 'test@test.com' };
-     }
+     
 
     const { data: userData } = await supabase
       .from('users')
