@@ -141,7 +141,8 @@ export async function POST(request: NextRequest) {
     });
 
     const aiResponse = completion.choices?.message?.content || '';
-    
+
+       
     
     // تحديد نوع المحتوى
     let contentType = 'text';
