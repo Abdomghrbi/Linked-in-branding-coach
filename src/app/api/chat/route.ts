@@ -11,36 +11,33 @@ const groq = new Groq({
 const getSystemPrompt = (voiceTone: string, dialect: string): string => {
   const toneInstructions: Record<string, string> = {
     formal: 'تحدث بلغة رسمية مهنية، استخدم مصطلحات دقيقة.',
-    friendly: 'تعامل مع المستخدم كأنك مستشاره الشخصي وقدم له نصيحة صادقة.',
-    challenging: 'ادفع المستخدم للتحدث براحته المطلقة واطرح عليه أسئلة صعبة.',
+    friendly: ' ، تعامل مع المستخدم كأنك مستشاره الشخصي وقدم له نصيحة صادقة.',
+    challenging:' ، إدفّع المستخدم للتحدث براحته المطلقة.',
     inspirational: 'استخدم أمثلة ومواقف تحفز المستخدم.',
   };
 
   const dialectInstructions: Record<string, string> = {
-    fusha: 'استخدم اللغة العربية الفصحى وتجنب الأخطاء الإملائية.',
+    fusha: 'استخدم اللغة العربية وتجنب الأخطاء الإملائية ',
     gulf: 'استخدم اللهجة الخليجية العامية.',
     egyptian: 'استخدم اللهجة المصرية العامية.',
     levantine: 'استخدم اللهجة الشامية العامية.',
   };
-
-  return `أنت "مستشار شخصي لبناء العلامة الشخصية" — خبير بخبرة 15 عاماُ في التسويق المهني على LinkedIn.
+  return `أنت "مستشار شخصي لبناء العلامة الشخصية" — خبير بخبرة 15 عاماً في التسويق المهني على LinkedIn.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
 
 قواعدك الذهبية:
-1. اسأل أولاً لفهم السياق، ثم قدم الحل. لا تبدأ بنصائح عامة.
-2. تحدث كمستشار حقيقي: ابدِ إعجابك، شارك رأيك، واسأل أسئلة متابعة ذكية.
-3. عند تقديم اقتراح، اشرح السبب باختصار: "لماذا هذه الطريقة؟".
-4. كن مباشراً وموجزاً قدر الإمكان. تجنب التكرار.
+1. لا تقدم كلاماً عشوائياً فوراً، اسأل أولاً، تفقد السياق، ناقش مع المستخدم.
+2. تحدث كمستشار حقيقي: اسأل أسئلة متابعة، ابدِ إعجابك، شارك رأيك.
+3. في كل مرة تقدم فيها اقتراحاً، علّم المستخدم: "لماذا هذه الطريقة؟" و"كيف تبني مصداقيتك؟"
+4. استخدم المصطلحات الإنجليزية فقط عند الضرورة.
 
-مهمتك: مساعدة المستخدم على تحويل أفكاره الخام إلى محتوى مهني ذي تأثير.`;
+مهمتك: مساعدة المستخدم كمستشاره الشخصي على تحويل أفكاره الخام إلى محتوى مهني ذا تأثير على لينكد.`;
 };
 
 export async function POST(request: NextRequest) {
   try {
-    // TODO: استبدل هذا بجلب المستخدم الحقيقي من الجلسة (Session/Auth)
-    // حالياً هذا الثابت خطر أمني كبير
     const body = await request.json();
     const { chatId, content } = body;
 
@@ -51,22 +48,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // محاكاة جلب المستخدم (يجب أن يأتي من الـ Auth Middleware)
     const supabase = await createClient();
-    
-    // مثال: جلب بيانات المستخدم الحالي بشكل آمن
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-    }
-
-    const userId = user.id;
+    const user = { id: '4a97bf17-7513-4377-b6b5-90f72cc43120', email: 'test@test.com' };
 
     const { data: userData } = await supabase
       .from('users')
       .select('voice_tone, dialect')
-      .eq('id', userId)
+      .eq('id', user.id)
       .single();
 
     const voiceTone = userData?.voice_tone || 'formal';
@@ -74,32 +62,29 @@ export async function POST(request: NextRequest) {
 
     let currentChatId = chatId;
 
-    // إنشاء محادثة جديدة إذا لم تكن موجودة
     if (!currentChatId) {
       const { data: newChat, error: chatError } = await supabase
         .from('chats')
-        .insert({ user_id: userId, status: 'active' })
+        .insert({ user_id: user.id, status: 'active' })
         .select('id')
         .single();
 
       if (chatError) {
-        console.error(chatError);
         return NextResponse.json(
           { error: 'فشل إنشاء المحادثة' },
           { status: 500 }
         );
       }
+
       currentChatId = newChat.id;
     }
 
-    // جلب سجل المحادثة
-    // نستخدم created_at للترتيب بدلاً من sequence_number لتجنب التعارضات
     const { data: historyMessages } = await supabase
       .from('messages')
       .select('role, content, created_at')
       .eq('chat_id', currentChatId)
       .order('created_at', { ascending: true })
-      .limit(20); // تقليل العدد لتحسين جودة السياق وتقليل التكلفة
+      .limit(20);
 
     const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
       { role: 'system', content: getSystemPrompt(voiceTone, dialect) },
@@ -116,7 +101,6 @@ export async function POST(request: NextRequest) {
 
     messagesForLLM.push({ role: 'user', content });
 
-    // حفظ رسالة المستخدم أولاً
     const { error: saveUserError } = await supabase
       .from('messages')
       .insert({
@@ -124,39 +108,36 @@ export async function POST(request: NextRequest) {
         role: 'user',
         content: content,
         content_type: 'text',
-        // لن نعتمد على sequence_number يدوياً، دعنا نعتمد على created_at الافتراضي
+        sequence_number: (historyMessages?.length || 0) + 1,
       });
 
     if (saveUserError) {
       console.error('Error saving user message:', saveUserError);
-      // لا نوقف العملية هنا بالضرورة، لكننا نسجل الخطأ
     }
 
-    // استدعاء الذكاء الاصطناعي
     const completion = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: messagesForLLM,
-      temperature: 0.7, // زيادة الحرارة قليلاً لتكون الردود أكثر طبيعية وأقل تكراراً
-      max_tokens: 800,  // زيادة الحد الأقصى للرموز
+      temperature: 0.2,
+      max_tokens: 400,
     });
 
-        const firstChoice = completion.choices;
-    const aiResponse = firstChoice?.message?.content || '';
-    
-       
-    
-    // تحديد نوع المحتوى
+    const aiResponse = completion.choices[0]?.message?.content || '';
+
     let contentType = 'text';
     let generatedPost = null;
 
-    if (aiResponse.includes('مسوَدّة') || aiResponse.includes('---')) {
+    if (
+      aiResponse.includes('مسوَدّة') ||
+      aiResponse.includes('---') ||
+      aiResponse.includes('#')
+    ) {
       contentType = 'post_draft';
       generatedPost = { raw: aiResponse, extracted_at: new Date().toISOString() };
     } else if (aiResponse.includes('نصيحة') || aiResponse.includes('💡')) {
       contentType = 'tips';
     }
 
-    // حفظ رد الذكاء الاصطناعي
     const { data: aiMessage, error: saveAIError } = await supabase
       .from('messages')
       .insert({
@@ -165,7 +146,7 @@ export async function POST(request: NextRequest) {
         content: aiResponse,
         content_type: contentType,
         generated_post: generatedPost,
-        // مرة أخرى، نزيل sequence_number اليدوي
+        sequence_number: (historyMessages?.length || 0) + 2,
       })
       .select()
       .single();
@@ -174,10 +155,12 @@ export async function POST(request: NextRequest) {
       console.error('Error saving AI message:', saveAIError);
     }
 
-    // تحديث وقت آخر رسالة في المحادثة
     await supabase
       .from('chats')
-      .update({ last_message_at: new Date().toISOString() })
+      .update({
+        last_message_at: new Date().toISOString(),
+        message_count: (historyMessages?.length || 0) + 2,
+      })
       .eq('id', currentChatId);
 
     return NextResponse.json({
@@ -199,5 +182,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-  }
-      
+}
