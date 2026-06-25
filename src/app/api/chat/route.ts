@@ -140,8 +140,9 @@ export async function POST(request: NextRequest) {
       max_tokens: 800,  // زيادة الحد الأقصى للرموز
     });
 
-    const aiResponse = completion.choices?.message?.content || '';
-
+        const firstChoice = completion.choices;
+    const aiResponse = firstChoice?.message?.content || '';
+    
        
     
     // تحديد نوع المحتوى
