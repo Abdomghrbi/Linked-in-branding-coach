@@ -16,9 +16,9 @@ export async function GET(request: Request) {
           getAll() {
             return cookieStore.getAll();
           },
-          setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+          setAll(cookiesToSet: { name: string; value: string; options: Record<string, any> }[]) {
             cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+              cookieStore.set(name, value, options);
             });
           },
         },
