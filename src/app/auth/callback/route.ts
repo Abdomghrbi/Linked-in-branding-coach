@@ -28,6 +28,28 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // Check if user exists in users table, if not create it
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+
+        if (!existingUser) {
+          await supabase.from('users').insert({
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+            voice_tone: 'friendly',
+            dialect: 'fusha',
+          });
+        }
+      }
+
       return NextResponse.redirect(`${origin}/onboarding`);
     }
   }
