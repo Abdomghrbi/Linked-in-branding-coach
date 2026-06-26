@@ -53,7 +53,7 @@ export default function ChatPage() {
     }
   }, []);
 
-  // Send message
+    // Send message
   const sendMessage = async (content: string) => {
     if (!content.trim() || loading) return;
 
@@ -72,6 +72,12 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chatId, content: userMsg.content }),
       });
+
+      // Redirect to login if unauthorized
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
 
       const data = await res.json();
 
