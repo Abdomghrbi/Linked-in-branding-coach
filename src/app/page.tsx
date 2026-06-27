@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, MessageSquare } from 'lucide-react';
+import { Bot, MessageSquare, Download, X } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -32,12 +32,58 @@ export default function ChatPage() {
   const [chats, setChats] = useState<Chat[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // PWA Install Banner
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
   // Scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // PWA Install Prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      // Show banner after 3 seconds
+      setTimeout(() => {
+        setShowInstallBanner(true);
+      }, 3000);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Hide if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallBanner(false);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+    }
+    
+    setInstallPrompt(null);
+  };
+
+  const dismissBanner = () => {
+    setShowInstallBanner(false);
+    // Save to localStorage so it doesn't show again for 24 hours
+    localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
+  };
 
   // Load chat history
   const loadChat = useCallback(async (id: string) => {
@@ -53,7 +99,7 @@ export default function ChatPage() {
     }
   }, []);
 
-    // Send message
+  // Send message
   const sendMessage = async (content: string) => {
     if (!content.trim() || loading) return;
 
@@ -149,6 +195,35 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-gray-50" dir="rtl">
+      {/* PWA Install Banner */}
+      {showInstallBanner && (
+        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-3 z-[60] shadow-lg animate-slide-down">
+          <div className="max-w-3xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Download className="w-5 h-5" />
+              <div>
+                <p className="font-medium text-sm">ثبّت التطبيق للوصول السريع</p>
+                <p className="text-xs text-blue-100">أو استخدم "إضافة للشاشة الرئيسية" من القائمة</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleInstall}
+                className="px-4 py-1.5 bg-white text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+              >
+                تثبيت
+              </button>
+              <button
+                onClick={dismissBanner}
+                className="p-1.5 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <Sidebar
         chats={chats}
@@ -166,7 +241,7 @@ export default function ChatPage() {
         {/* Messages Area */}
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto px-4 py-6 space-y-6"
+          className={`flex-1 overflow-y-auto px-4 py-6 space-y-6 ${showInstallBanner ? 'pt-16' : ''}`}
         >
           {!hasMessages ? (
             <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto">
