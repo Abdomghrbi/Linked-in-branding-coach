@@ -9,19 +9,15 @@ interface SuggestedPromptsProps {
 const prompts = [
   {
     icon: Lightbulb,
-    text: 'عندي فكرة لمشروع جديد، كيف أعرضها على LinkedIn؟',
+    text: 'عندي فكرة لمشروع جديد، كيف أعرضها على لينكدان؟',
     color: 'bg-amber-50 text-amber-600 border-amber-200',
   },
   {
     icon: TrendingUp,
-    text: 'حضرت مؤتمر AI، ساعدني أكتب عن التجربة',
+    text: 'حضرت مؤتمر تقني، ساعدني أكتب عن التجربة',
     color: 'bg-blue-50 text-blue-600 border-blue-200',
   },
-  {
-    icon: Users,
-    text: 'كيف أزيد engagement على منشوراتي؟',
-    color: 'bg-green-50 text-green-600 border-green-200',
-  },
+  
   {
     icon: Award,
     text: 'حصلت على شهادة جديدة، كيف أعلن عنها؟',
@@ -29,7 +25,7 @@ const prompts = [
   },
   {
     icon: Briefcase,
-    text: 'بدي أغير مجال عملي، كيف أبني Personal Branding؟',
+    text: 'بدي أغير مجال عملي، كيف أبني علامتي الشخصية؟',
     color: 'bg-rose-50 text-rose-600 border-rose-200',
   },
 ];
