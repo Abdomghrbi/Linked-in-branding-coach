@@ -170,15 +170,12 @@ export default function ChatPage() {
         >
           {!hasMessages ? (
             <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center mb-6 shadow-lg">
-                <Bot className="w-10 h-10 text-white" />
-              </div>
               
               <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                 مرحباً أنا مستشارك الشخصي
               </h2>
               <p className="text-gray-500 text-center mb-8 leading-relaxed">
-                  أساعدك بتحويل أفكارك إلى محتوى مهني واضح وجذاب.
+                  أساعدك بتحويل أفكارك الخام إلى محتوى مهني واضح وجذاب.
                 <br />
                 أخبرني عن تجربتك أو فكرتك، هيا نبدأ...
               </p>
