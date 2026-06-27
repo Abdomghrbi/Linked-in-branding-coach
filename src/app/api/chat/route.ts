@@ -293,7 +293,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error) {
+     } catch (error) {
     // Safe error logging - don't expose internal details
     console.error('Chat API Error:', error instanceof Error ? error.message : 'Unknown error');
     
@@ -301,4 +301,5 @@ export async function POST(request: NextRequest) {
       { error: 'حدث خطأ في معالجة الطلب' },
       { status: 500 }
     );
-  }ثير ع
+  }
+}
