@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
 
     if (historyMessages && historyMessages.length > 0) {
       // Limit history to prevent token overflow
-      const maxHistory = 20;
+      const maxHistory = 40;
       const recentMessages = historyMessages.slice(-maxHistory);
       
       recentMessages.forEach((msg) => {
