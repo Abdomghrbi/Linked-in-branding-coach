@@ -41,77 +41,55 @@ export default function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    // Check if user already dismissed or installed
-    const bannerDismissed = localStorage.getItem('pwa-banner-dismissed');
-    if (bannerDismissed) {
-      setShowInstallBanner(false);
-      return;
-    }
+  useEffect(() => {
+  // 1. إذا كان مُثبّتاً حالياً (من الأيقونة) — أخفِ النافذة
+  const isStandalone = 
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia('(display-mode: fullscreen)').matches ||
+    (window.navigator as any).standalone === true;
 
-    // Check if in standalone mode (installed)
-    const isStandalone = 
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.matchMedia('(display-mode: fullscreen)').matches ||
-      (window.navigator as any).standalone === true;
-
-    if (isStandalone) {
-      setShowInstallBanner(false);
-      return;
-    }
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-      setShowInstallBanner(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Show banner after 3 seconds if not dismissed
-    const timer = setTimeout(() => {
-      const wasDismissed = localStorage.getItem('pwa-banner-dismissed');
-      if (!wasDismissed) {
-        setShowInstallBanner(true);
-      }
-    }, 3000);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      clearTimeout(timer);
-    };
-  }, []);
-
-  const handleInstall = async () => {
-    if (!installPrompt) return;
-    
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      setInstallPrompt(null);
-      setShowInstallBanner(false);
-      localStorage.setItem('pwa-banner-dismissed', 'installed');
-    }
-  };
-
-  const dismissBanner = () => {
+  if (isStandalone) {
     setShowInstallBanner(false);
-    localStorage.setItem('pwa-banner-dismissed', 'dismissed');
+    return;
+  }
+
+  // 2. إذا كان المستخدم ضغط "تثبيت" سابقاً (بنجاح أو إلغاء)
+  const installStatus = localStorage.getItem('pwa-install-status');
+  if (installStatus === 'installed' || installStatus === 'dismissed') {
+    setShowInstallBanner(false);
+    return;
+  }
+
+  const handleBeforeInstallPrompt = (e: Event) => {
+    e.preventDefault();
+    setInstallPrompt(e);
+    setShowInstallBanner(true);
   };
 
-  const loadChat = useCallback(async (id: string) => {
-    try {
-      const res = await fetch(`/api/chat/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data.messages || []);
-        setChatId(id);
-      }
-    } catch (err) {
-      console.error('Failed to load chat:', err);
-    }
-  }, []);
+  const handleAppInstalled = () => {
+    localStorage.setItem('pwa-install-status', 'installed');
+    setShowInstallBanner(false);
+    setInstallPrompt(null);
+  };
 
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  window.addEventListener('appinstalled', handleAppInstalled);
+
+  // 3. مؤقت للعرض (فقط إذا لم يتم رفض/تثبيت سابقاً)
+  const timer = setTimeout(() => {
+    const status = localStorage.getItem('pwa-install-status');
+    if (!status) {
+      setShowInstallBanner(true);
+    }
+  }, 3000);
+
+  return () => {
+    window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.removeEventListener('appinstalled', handleAppInstalled);
+    clearTimeout(timer);
+  };
+}, []);
+    
   const sendMessage = async (content: string) => {
     if (!content.trim() || loading) return;
 
