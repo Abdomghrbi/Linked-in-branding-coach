@@ -41,7 +41,14 @@ export default function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    // Check if app is already installed (standalone mode)
+    // Check if user already dismissed or installed
+    const bannerDismissed = localStorage.getItem('pwa-banner-dismissed');
+    if (bannerDismissed) {
+      setShowInstallBanner(false);
+      return;
+    }
+
+    // Check if in standalone mode (installed)
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
       window.matchMedia('(display-mode: fullscreen)').matches ||
@@ -60,13 +67,10 @@ export default function ChatPage() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Show banner after 3 seconds if not installed
+    // Show banner after 3 seconds if not dismissed
     const timer = setTimeout(() => {
-      const stillNotStandalone = 
-        !window.matchMedia('(display-mode: standalone)').matches &&
-        !window.matchMedia('(display-mode: fullscreen)').matches;
-      
-      if (stillNotStandalone) {
+      const wasDismissed = localStorage.getItem('pwa-banner-dismissed');
+      if (!wasDismissed) {
         setShowInstallBanner(true);
       }
     }, 3000);
@@ -86,11 +90,13 @@ export default function ChatPage() {
     if (outcome === 'accepted') {
       setInstallPrompt(null);
       setShowInstallBanner(false);
+      localStorage.setItem('pwa-banner-dismissed', 'installed');
     }
   };
 
   const dismissBanner = () => {
     setShowInstallBanner(false);
+    localStorage.setItem('pwa-banner-dismissed', 'dismissed');
   };
 
   const loadChat = useCallback(async (id: string) => {
@@ -271,7 +277,7 @@ export default function ChatPage() {
                     <div className="flex items-center gap-2 text-gray-400 text-sm">
                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" />
                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-100" />
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200" />
+                      <div className="w-2 h--2 bg-blue-600 rounded-full animate-bounce delay-200" />
                       <span className="mr-2">يكتب...</span>
                     </div>
                   </div>
