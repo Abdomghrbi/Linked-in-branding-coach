@@ -35,51 +35,51 @@ export default function ChatPage() {
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
   useEffect(() => {
-  useEffect(() => {
-  // Check if app is running as installed PWA
-  const isStandalone = 
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.matchMedia('(display-mode: fullscreen)').matches ||
-    window.matchMedia('(display-mode: minimal-ui)').matches ||
-    (window.navigator as any).standalone === true;
-
-  // If running as installed app, NEVER show banner
-  if (isStandalone) {
-    setShowInstallBanner(false);
-    return;
-  }
-
-  // If in browser, check if user previously dismissed
-  const bannerDismissed = localStorage.getItem('pwa-banner-dismissed');
-  if (bannerDismissed) {
-    setShowInstallBanner(false);
-    return;
-  }
-
-  const handleBeforeInstallPrompt = (e: Event) => {
-    e.preventDefault();
-    setInstallPrompt(e);
-    setShowInstallBanner(true);
-  };
-
-  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-  const timer = setTimeout(() => {
-    const stillNotStandalone = 
-      !window.matchMedia('(display-mode: standalone)').matches &&
-      !window.matchMedia('(display-mode: fullscreen)').matches &&
-      !window.matchMedia('(display-mode: minimal-ui)').matches;
-    
-    if (stillNotStandalone && !localStorage.getItem('pwa-banner-dismissed')) {
-      setShowInstallBanner(true);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, 3000);
+  }, [messages]);
 
-  return () => {
-    window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    clearTimeout(timer);
-  };
-}, []);
+  useEffect(() => {
+    // Check if user already dismissed or installed
+    const bannerDismissed = localStorage.getItem('pwa-banner-dismissed');
+    if (bannerDismissed) {
+      setShowInstallBanner(false);
+      return;
+    }
+
+    // Check if in standalone mode (installed)
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      (window.navigator as any).standalone === true;
+
+    if (isStandalone) {
+      setShowInstallBanner(false);
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Show banner after 3 seconds if not dismissed
+    const timer = setTimeout(() => {
+      const wasDismissed = localStorage.getItem('pwa-banner-dismissed');
+      if (!wasDismissed) {
+        setShowInstallBanner(true);
+      }
+    }, 3000);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
+    };
+  }, []);
 
   const handleInstall = async () => {
     if (!installPrompt) return;
