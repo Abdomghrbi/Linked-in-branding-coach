@@ -186,7 +186,6 @@ export default function ChatPage() {
               <Download className="w-5 h-5" />
               <div>
                 <p className="font-medium text-sm">ثبّت التطبيق للوصول السريع</p>
-                <p className="text-xs text-blue-100">أو استخدم القائمة ⋮</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
