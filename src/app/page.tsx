@@ -25,40 +25,33 @@ interface Chat {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // PWA Install Banner
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
-  // Scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-    // PWA Install Prompt
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e);
       setShowInstallBanner(true);
-      console.log('✅ beforeinstallprompt captured!');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setShowInstallBanner(false);
     } else {
-      // Show banner after 3 seconds for all users (not installed)
       const timer = setTimeout(() => {
         setShowInstallBanner(true);
       }, 3000);
@@ -71,25 +64,19 @@ export default function ChatPage() {
   }, []);
 
   const handleInstall = async () => {
-    if (!installPrompt) return;
-    
+    if (!installPrompt) {
+      alert('لتثبيت التطبيق:\n1. اضغط على القائمة ⋮\n2. اختر "إضافة للشاشة الرئيسية"');
+      return;
+    }
     installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      setShowInstallBanner(false);
-    }
-    
-    setInstallPrompt(null);
+    if (outcome === 'accepted') setInstallPrompt(null);
   };
 
   const dismissBanner = () => {
     setShowInstallBanner(false);
-    // Save to localStorage so it doesn't show again for 24 hours
-    localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
   };
 
-  // Load chat history
   const loadChat = useCallback(async (id: string) => {
     try {
       const res = await fetch(`/api/chat/${id}`);
@@ -103,7 +90,6 @@ export default function ChatPage() {
     }
   }, []);
 
-  // Send message
   const sendMessage = async (content: string) => {
     if (!content.trim() || loading) return;
 
@@ -123,7 +109,6 @@ export default function ChatPage() {
         body: JSON.stringify({ chatId, content: userMsg.content }),
       });
 
-      // Redirect to login if unauthorized
       if (res.status === 401) {
         window.location.href = '/login';
         return;
@@ -143,8 +128,6 @@ export default function ChatPage() {
             createdAt: data.message.createdAt,
           },
         ]);
-        
-        // Refresh chat list
         fetchChats();
       } else {
         setMessages((prev) => [
@@ -170,7 +153,6 @@ export default function ChatPage() {
     }
   };
 
-  // Fetch chats list
   const fetchChats = useCallback(async () => {
     try {
       const res = await fetch('/api/chats');
@@ -183,14 +165,12 @@ export default function ChatPage() {
     }
   }, []);
 
-  // New chat
   const startNewChat = () => {
     setMessages([]);
     setChatId(null);
     setSidebarOpen(false);
   };
 
-  // Load chats on mount
   useEffect(() => {
     fetchChats();
   }, [fetchChats]);
@@ -199,15 +179,14 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-gray-50" dir="rtl">
-      {/* PWA Install Banner */}
       {showInstallBanner && (
-        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-3 z-[60] shadow-lg animate-slide-down">
+        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-3 z-[60] shadow-lg">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Download className="w-5 h-5" />
               <div>
                 <p className="font-medium text-sm">ثبّت التطبيق للوصول السريع</p>
-                <p className="text-xs text-blue-100">أو استخدم "إضافة للشاشة الرئيسية" من القائمة</p>
+                <p className="text-xs text-blue-100">أو استخدم القائمة ⋮</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -228,7 +207,6 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Sidebar */}
       <Sidebar
         chats={chats}
         currentChatId={chatId}
@@ -238,27 +216,23 @@ export default function ChatPage() {
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
-        {/* Messages Area */}
         <div
           ref={scrollRef}
           className={`flex-1 overflow-y-auto px-4 py-6 space-y-6 ${showInstallBanner ? 'pt-16' : ''}`}
         >
           {!hasMessages ? (
             <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto">
-              
               <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                 مرحباً أنا مستشارك الشخصي
               </h2>
               <p className="text-gray-500 text-center mb-8 leading-relaxed">
-                  أساعدك بتحويل أفكارك الخام إلى محتوى مهني واضح وجذاب.
+                أساعدك بتحويل أفكارك الخام إلى محتوى مهني واضح وجذاب.
                 <br />
                 أخبرني عن تجربتك أو فكرتك، هيا نبدأ...
               </p>
-
               <SuggestedPrompts onSelect={sendMessage} />
             </div>
           ) : (
@@ -273,7 +247,6 @@ export default function ChatPage() {
                   createdAt={msg.createdAt}
                 />
               ))}
-              
               {loading && (
                 <div className="flex gap-3 flex-row-reverse">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shrink-0">
@@ -293,7 +266,6 @@ export default function ChatPage() {
           )}
         </div>
 
-        {/* Input Area */}
         <ChatInput onSend={sendMessage} loading={loading} />
       </div>
     </div>
