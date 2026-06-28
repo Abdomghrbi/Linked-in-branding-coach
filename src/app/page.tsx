@@ -41,6 +41,17 @@ export default function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
+    // Check if app is already installed (standalone mode)
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      (window.navigator as any).standalone === true;
+
+    if (isStandalone) {
+      setShowInstallBanner(false);
+      return;
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e);
@@ -49,28 +60,33 @@ export default function ChatPage() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setShowInstallBanner(false);
-    } else {
-      const timer = setTimeout(() => {
+    // Show banner after 3 seconds if not installed
+    const timer = setTimeout(() => {
+      const stillNotStandalone = 
+        !window.matchMedia('(display-mode: standalone)').matches &&
+        !window.matchMedia('(display-mode: fullscreen)').matches;
+      
+      if (stillNotStandalone) {
         setShowInstallBanner(true);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
+      }
+    }, 3000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
     };
   }, []);
 
   const handleInstall = async () => {
-    if (!installPrompt) {
-      alert('لتثبيت التطبيق:\n1. اضغط على القائمة ⋮\n2. اختر "إضافة للشاشة الرئيسية"');
-      return;
-    }
+    if (!installPrompt) return;
+    
     installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
-    if (outcome === 'accepted') setInstallPrompt(null);
+    
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+      setShowInstallBanner(false);
+    }
   };
 
   const dismissBanner = () => {
