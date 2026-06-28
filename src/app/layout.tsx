@@ -2,14 +2,10 @@ import './globals.css'
 
 export const metadata = {
   title: 'مستشار العلامة الشخصية',
-  description: 'مستشارك الشخصي لبناء علامتك المهنية على لينكدإن',
+  description: 'مستشارك الشخصي لبناء علامتك المهنية على LinkedIn',
   manifest: '/manifest.json',
   themeColor: '#2563eb',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Linkedin coach',
-  },
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,10 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#2563eb" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="مستشار العلامة" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <meta name="apple-mobile-web-app-title" content="Linked in coach" />
       </head>
       <body className="antialiased">
         {children}
