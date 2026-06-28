@@ -1,4 +1,4 @@
-PWAclient';
+'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, MessageSquare, Download, X } from 'lucide-react';
