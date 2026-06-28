@@ -1,4 +1,4 @@
-'use client';
+PWAclient';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bot, MessageSquare, Download, X } from 'lucide-react';
@@ -48,21 +48,30 @@ export default function ChatPage() {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setInstallPrompt(e);
-      // Show banner after 3 seconds
-      setTimeout(() => {
-        setShowInstallBanner(true);
-      }, 3000);
+      // Show banner immediately for testing
+      setShowInstallBanner(true);
+      console.log('✅ beforeinstallprompt captured!');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Hide if already installed
+    // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setShowInstallBanner(false);
     }
 
+    // For testing: show manual install button after 5 seconds
+    const timer = setTimeout(() => {
+      if (!installPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('⏰ Manual install check...');
+        // Try to trigger it manually
+        setShowInstallBanner(true);
+      }
+    }, 5000);
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
     };
   }, []);
 
