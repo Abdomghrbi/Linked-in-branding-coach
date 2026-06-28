@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
       model: 'llama-3.3-70b-versatile',
       messages: messagesForLLM,
       temperature: 0.3,
-      max_tokens: 800,
+      max_tokens: 500,
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
