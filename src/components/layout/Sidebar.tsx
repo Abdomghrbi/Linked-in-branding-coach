@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageSquare, Plus, Search, Clock } from 'lucide-react';
+import { MessageSquare, Plus, Search, Clock, Home, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Chat {
@@ -15,31 +15,42 @@ interface SidebarProps {
   currentChatId: string | null;
   onChatSelect: (chatId: string) => void;
   onNewChat: () => void;
+  onGoHome?: () => void;  
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ chats, currentChatId, onChatSelect, onNewChat, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ 
+  chats, 
+  currentChatId, 
+  onChatSelect, 
+  onNewChat, 
+  onGoHome,
+  isOpen, 
+  onClose 
+}: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredChats = searchQuery 
     ? chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : chats;
 
+  
   const formatDate = (date: string | null | undefined) => {
-  if (!date) return 'غير معروف';
-  
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return 'غير معروف';
-  
-  const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  
-  if (hours < 1) return 'الآن';
-  if (hours < 24) return `منذ ${hours} ساعة`;
-  return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
+    if (!date) return 'غير معروف';
+    
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return 'غير معروف';
+    
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    
+    if (hours < 1) return 'الآن';
+    if (hours < 24) return `منذ ${hours} ساعة`;
+    return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
   };
+
   return (
     <>
       {/* Overlay for mobile */}
@@ -56,10 +67,41 @@ export default function Sidebar({ chats, currentChatId, onChatSelect, onNewChat,
         ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         flex flex-col h-full
       `}>
-        {/* New Chat Button */}
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <h2 className="font-bold text-lg text-gray-900">المحادثات</h2>
+          <button 
+            onClick={onClose}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+
+        {/* home button */}
+        {onGoHome && (
+          <div className="px-4 pt-3">
+            <button
+              onClick={() => {
+                onGoHome();
+                onClose();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors border border-gray-200"
+            >
+              <Home className="w-5 h-5 text-gray-500" />
+              <span className="font-medium text-sm">القائمة الرئيسية</span>
+            </button>
+          </div>
+        )}
+
+        {/* new chat button */}
         <div className="p-4 border-b border-gray-200">
           <button
-            onClick={onNewChat}
+            onClick={() => {
+              onNewChat();
+              onClose();
+            }}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 px-4 font-medium transition-colors shadow-sm"
           >
             <Plus className="w-5 h-5" />
@@ -86,7 +128,9 @@ export default function Sidebar({ chats, currentChatId, onChatSelect, onNewChat,
           {filteredChats.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">لا توجد محادثات</p>
+              <p className="text-sm">
+                {searchQuery ? 'لا توجد نتائج' : 'لا توجد محادثات'}
+              </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -97,7 +141,9 @@ export default function Sidebar({ chats, currentChatId, onChatSelect, onNewChat,
                     onChatSelect(chat.id);
                     onClose();
                   }}
-                  className={`w-full text-right p-4 hover:bg-gray-50 transition-colors flex items-start gap-3 ${currentChatId === chat.id ? 'bg-blue-50 border-r-2 border-blue-600' : ''}`}
+                  className={`w-full text-right p-4 hover:bg-gray-50 transition-colors flex items-start gap-3 ${
+                    currentChatId === chat.id ? 'bg-blue-50 border-r-2 border-blue-600' : ''
+                  }`}
                 >
                   <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                     <MessageSquare className="w-5 h-5 text-gray-500" />
@@ -110,7 +156,7 @@ export default function Sidebar({ chats, currentChatId, onChatSelect, onNewChat,
                       <Clock className="w-3 h-3" />
                       <span>{formatDate(chat.lastMessageAt)}</span>
                       <span>•</span>
-                      <span>{chat.messageCount} رسائل</span>
+                      <span>{chat.messageCount || 0} رسائل</span>
                     </div>
                   </div>
                 </button>
@@ -121,4 +167,4 @@ export default function Sidebar({ chats, currentChatId, onChatSelect, onNewChat,
       </aside>
     </>
   );
-              }
+}
