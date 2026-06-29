@@ -1,6 +1,6 @@
-Robot client';
+'use client';
 
-import {Computer, Menu, LogOut, User, DoorOpen } from 'lucide-react';
+import { Computer, Menu, LogOut, User, DoorOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
