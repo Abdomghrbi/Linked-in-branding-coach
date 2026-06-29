@@ -1,6 +1,6 @@
 'use client';
 
-import { Bot, Menu, LogOut, User } from 'lucide-react';
+import { Bot, Menu, LogOut, User, DoorOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -34,7 +34,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           .single();
         
         setUserData(profile || {
-          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'مستخدم',
+          full_name: user.user_metadata?.full_name || user.email?.split('@') || 'مستخدم',
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           email: user.email,
         });
@@ -53,7 +53,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   const getInitials = (name: string | null) => {
     if (!name) return 'م';
-    return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    return name.split(' ').map(n => n).join('').slice(0, 2).toUpperCase();
   };
 
   return (
@@ -142,8 +142,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
               href="/login"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
             >
-              <User className="w-4 h-4" />
-              تسجيل الدخول
+             
+              <DoorOpen className="w-4 h-4 rotate-180" /> 
+              دخول
             </a>
           )
         )}
