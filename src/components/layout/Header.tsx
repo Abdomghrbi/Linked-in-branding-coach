@@ -1,6 +1,6 @@
 'use client';
 
-import { Bot, Menu, LogOut, User, DoorOpen } from 'lucide-react';
+import { Sparkles, Menu, LogOut, User, DoorOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -67,7 +67,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </button>
         
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg">
-          <Bot className="w-6 h-6 text-white" />
+          <Sparkles className="w-6 h-6 text-white" />
         </div>
         
         <div>
