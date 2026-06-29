@@ -229,13 +229,14 @@ export default function ChatPage() {
       )}
 
       <Sidebar
-        chats={chats}
-        currentChatId={chatId}
-        onChatSelect={loadChat}
-        onNewChat={startNewChat}
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
+  chats={chats}
+  currentChatId={currentChatId}
+  onChatSelect={handleChatSelect}
+  onNewChat={handleNewChat}
+  onGoHome={() => router.push('/')} 
+  isOpen={sidebarOpen}
+  onClose={() => setSidebarOpen(false)}
+/>
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setSidebarOpen(true)} />
