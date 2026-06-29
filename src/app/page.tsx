@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation'; // ← جديد
 import { Bot, MessageSquare, Download, X } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -24,6 +25,7 @@ interface Chat {
 }
 
 export default function ChatPage() {
+  const router = useRouter(); // ← جديد
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
@@ -41,14 +43,12 @@ export default function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    // Check if user already dismissed or installed
     const bannerDismissed = localStorage.getItem('pwa-banner-dismissed');
     if (bannerDismissed) {
       setShowInstallBanner(false);
       return;
     }
 
-    // Check if in standalone mode (installed)
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches ||
       window.matchMedia('(display-mode: fullscreen)').matches ||
@@ -67,7 +67,6 @@ export default function ChatPage() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Show banner after 3 seconds if not dismissed
     const timer = setTimeout(() => {
       const wasDismissed = localStorage.getItem('pwa-banner-dismissed');
       if (!wasDismissed) {
@@ -193,6 +192,11 @@ export default function ChatPage() {
     setSidebarOpen(false);
   };
 
+  const handleChatSelect = (id: string) => {
+    loadChat(id);
+    setSidebarOpen(false);
+  };
+
   useEffect(() => {
     fetchChats();
   }, [fetchChats]);
@@ -229,14 +233,14 @@ export default function ChatPage() {
       )}
 
       <Sidebar
-  chats={chats}
-  currentChatId={currentChatId}
-  onChatSelect={handleChatSelect}
-  onNewChat={handleNewChat}
-  onGoHome={() => router.push('/')} 
-  isOpen={sidebarOpen}
-  onClose={() => setSidebarOpen(false)}
-/>
+        chats={chats}
+        currentChatId={chatId}
+        onChatSelect={handleChatSelect}
+        onNewChat={startNewChat}
+        onGoHome={() => router.push('/')}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setSidebarOpen(true)} />
@@ -278,7 +282,7 @@ export default function ChatPage() {
                     <div className="flex items-center gap-2 text-gray-400 text-sm">
                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" />
                       <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-100" />
-                      <div className="w-2 h--2 bg-blue-600 rounded-full animate-bounce delay-200" />
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200" />
                       <span className="mr-2">يكتب...</span>
                     </div>
                   </div>
