@@ -26,17 +26,20 @@ export default function Sidebar({ chats, currentChatId, onChatSelect, onNewChat,
     ? chats.filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : chats;
 
-  const formatDate = (date: string) => {
-    const d = new Date(date);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    
-    if (hours < 1) return 'الآن';
-    if (hours < 24) return `منذ ${hours} ساعة`;
-    return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
+  const formatDate = (date: string | null | undefined) => {
+  if (!date) return 'غير معروف';
+  
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return 'غير معروف';
+  
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  
+  if (hours < 1) return 'الآن';
+  if (hours < 24) return `منذ ${hours} ساعة`;
+  return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
   };
-
   return (
     <>
       {/* Overlay for mobile */}
