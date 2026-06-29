@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageSquare, Plus, Search, Clock, Home, X } from 'lucide-react';
+import { MessageSquare, Plus, Search, Clock, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface Chat {
@@ -25,7 +25,6 @@ export default function Sidebar({
   currentChatId, 
   onChatSelect, 
   onNewChat, 
-  onGoHome,
   isOpen, 
   onClose 
 }: SidebarProps) {
@@ -79,22 +78,7 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* home button */}
-        {onGoHome && (
-          <div className="px-4 pt-3">
-            <button
-              onClick={() => {
-                onGoHome();
-                onClose();
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors border border-gray-200"
-            >
-              <Home className="w-5 h-5 text-gray-500" />
-              <span className="font-medium text-sm">القائمة الرئيسية</span>
-            </button>
-          </div>
-        )}
-
+        
         {/* new chat button */}
         <div className="p-4 border-b border-gray-200">
           <button
