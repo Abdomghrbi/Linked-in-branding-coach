@@ -143,7 +143,7 @@ export default function OnboardingPage() {
               <Bot className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {step === 5 ? 'أنت جاهز!' : 'إبدأ رحلتك'}
+              {step === 5 ? 'هل أنت جاهز!' : 'إبدأ رحلتك'}
             </h1>
             <p className="text-gray-500 text-sm">
               {step === 1 && 'دعنا نتعرف عليك أكتر'}
@@ -295,7 +295,7 @@ export default function OnboardingPage() {
                   <p className="text-sm text-gray-500">
                     مستشارك الشخصي جاهز ليساعدك ببناء علامتك على LinkedIn
                     <br />
-                    كنسبة <span className="font-medium text-gray-700">{data.job_title}</span> في مجال <span className="font-medium text-gray-700">{data.industry}</span>
+                    كـ <span className="font-medium text-gray-700">{data.job_title}</span> في مجال <span className="font-medium text-gray-700">{data.industry}</span>
                   </p>
                 </div>
               </div>
