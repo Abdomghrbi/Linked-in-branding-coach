@@ -143,13 +143,13 @@ export default function OnboardingPage() {
               <Bot className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {step === 5 ? 'أنت جاهز!' : 'نبدأ رحلتك'}
+              {step === 5 ? 'أنت جاهز!' : 'إبدأ رحلتك'}
             </h1>
             <p className="text-gray-500 text-sm">
-              {step === 1 && 'خلينا نتعرف عليك أكتر'}
-              {step === 2 && 'شو بتشتغل؟'}
+              {step === 1 && 'دعنا نتعرف عليك أكتر'}
+              {step === 2 && 'ماهو مجال عملك؟'}
               {step === 3 && 'رابط LinkedIn (اختياري)'}
-              {step === 4 && 'كيف بدك المستشار يتكلم معك؟'}
+              {step === 4 && 'كيف تريد من المستشار أن يتكلم معك؟'}
               {step === 5 && 'كل شي جاهز، هيا نبدأ!'}
             </p>
           </div>
@@ -226,7 +226,7 @@ export default function OnboardingPage() {
                     />
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    رح يساعدني هاد الرابط بفهم محتواك الحالي على LinkedIn
+                    سيساعدني هذا الرابط بفهم محتواك الحالي على LinkedIn
                   </p>
                 </div>
               </div>
@@ -293,7 +293,7 @@ export default function OnboardingPage() {
                     <span className="font-bold text-blue-600">{data.full_name}</span>، أهلاً وسهلاً!
                   </p>
                   <p className="text-sm text-gray-500">
-                    مستشارك الشخصي جاهز يساعدك ببناء علامتك على LinkedIn
+                    مستشارك الشخصي جاهز ليساعدك ببناء علامتك على LinkedIn
                     <br />
                     كنسبة <span className="font-medium text-gray-700">{data.job_title}</span> في مجال <span className="font-medium text-gray-700">{data.industry}</span>
                   </p>
