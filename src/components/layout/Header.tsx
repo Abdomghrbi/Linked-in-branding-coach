@@ -92,13 +92,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   <img 
                     src={userData.avatar_url} 
                     alt={userData.full_name || 'المستخدم'}
-                    className="w-9 h-9 rounded-full object-cover border-2 border-blue-100"
+                    className="w-9 h-9 rounded-full object-cover border-4 border-blue-100"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-sm font-bold border-2 border-blue-100">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-sm font-bold border-4 border-blue-100">
                     {getInitials(userData.full_name)}
                   </div>
                 )}
