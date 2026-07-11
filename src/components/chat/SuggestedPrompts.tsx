@@ -25,7 +25,7 @@ const prompts = [
   },
   {
     icon: Briefcase,
-    text: 'أريد أغير مجال عملي، كيف أبني علامتي الشخصية؟',
+    text: 'أريد تغيير مجال عملي، كيف أبني علامتي الشخصية؟',
     color: 'bg-rose-50 text-rose-600 border-rose-200',
   },
 ];
