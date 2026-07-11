@@ -153,8 +153,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
       {showInfo && (
         <div className="absolute top-16 left-4 right-4 bg-white border rounded-xl shadow-xl p-4 z-50 max-w-sm mr-auto">
           <p className="text-sm text-gray-600 leading-relaxed">
-            أنا مستشارك الشخصي لبناء علامتك المهنية على LinkedIn. 
-            أساعدك بتحويل أفكارك إلى محتوى مهني ذو تأثير.
+          التطبيق في مرحلة تجريبية. إذا كان لديك أي اقتراح فلا تتردد بطرحه
           </p>
         </div>
       )}
