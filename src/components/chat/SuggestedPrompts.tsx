@@ -9,7 +9,7 @@ interface SuggestedPromptsProps {
 const prompts = [
   {
     icon: Lightbulb,
-    text: 'عندي فكرة لمشروع جديد، كيف أعرضها على لينكدان؟',
+    text: 'لدي فكرة لمشروع جديد، كيف أعرضها على لينكدان؟',
     color: 'bg-amber-50 text-amber-600 border-amber-200',
   },
   {
@@ -25,7 +25,7 @@ const prompts = [
   },
   {
     icon: Briefcase,
-    text: 'بدي أغير مجال عملي، كيف أبني علامتي الشخصية؟',
+    text: 'أريد أغير مجال عملي، كيف أبني علامتي الشخصية؟',
     color: 'bg-rose-50 text-rose-600 border-rose-200',
   },
 ];
