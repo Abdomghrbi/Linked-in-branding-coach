@@ -71,7 +71,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </div>
         
         <div>
-          <h1 className="font-bold text-gray-900 text-lg leading-tight">مستشار العلامة الشخصية</h1>
+          <h1 className="font-bold text-gray-900 text-lg leading-tight">Linkedin coach</h1>
         </div>
       </div>
 
