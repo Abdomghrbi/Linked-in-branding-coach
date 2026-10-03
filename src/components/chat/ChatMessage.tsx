@@ -13,11 +13,52 @@ interface MessageProps {
 
 export default function ChatMessage({ role, content, contentType }: MessageProps) {
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleFeedback = async (type: 'like' | 'dislike') => {
+    if (isSubmitting) return;
+
+    // إلغاء التحدي والتراجع عند الضغط مرتين على نفس الزر
+    if (feedback === type) {
+      setFeedback(null);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFeedback(type);
+
+    try {
+      const preferred_length = type === 'like' ? 'concise' : 'detailed';
+      const preferred_tone = type === 'like' ? 'friendly' : 'professional';
+
+      const response = await fetch('/api/user-preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferred_length,
+          preferred_tone,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل حفظ التقييم');
+      }
+    } catch (error) {
+      console.error('Error saving feedback:', error);
+      // إرجاع الحالة للأصل في حال وجود خطأ
+      setFeedback(null);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isUser = role === 'user';
@@ -68,10 +109,29 @@ export default function ChatMessage({ role, content, contentType }: MessageProps
         {/* Feedback Buttons (AI only) */}
         {!isUser && (
           <div className="flex items-center gap-1 mt-1.5 mr-2">
-            <button className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-green-600 transition-colors" title="مفيد">
+            <button 
+              onClick={() => handleFeedback('like')}
+              disabled={isSubmitting}
+              className={`p-1 rounded transition-colors ${
+                feedback === 'like' 
+                  ? 'text-green-600 bg-green-50' 
+                  : 'text-gray-400 hover:bg-gray-100 hover:text-green-600'
+              }`} 
+              title="مفيد (تفضيل الإجابات المختصرة)"
+            >
               <ThumbsUp className="w-3.5 h-3.5" />
             </button>
-            <button className="p-1 hover:bg-gray-100 rounded text-gray-400 hover:text-red-600 transition-colors" title="غير مفيد">
+
+            <button 
+              onClick={() => handleFeedback('dislike')}
+              disabled={isSubmitting}
+              className={`p-1 rounded transition-colors ${
+                feedback === 'dislike' 
+                  ? 'text-red-600 bg-red-50' 
+                  : 'text-gray-400 hover:bg-gray-100 hover:text-red-600'
+              }`} 
+              title="غير مفيد (تفضيل الإجابات المفصلة)"
+            >
               <ThumbsDown className="w-3.5 h-3.5" />
             </button>
           </div>
