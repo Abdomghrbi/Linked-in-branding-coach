@@ -25,7 +25,7 @@ interface Chat {
 }
 
 export default function ChatPage() {
-  const router = useRouter(); // ← جديد
+  const router = useRouter(); 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
@@ -251,9 +251,6 @@ export default function ChatPage() {
         >
           {!hasMessages ? (
             <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-                مرحباً أنا مستشارك الشخصي
-              </h2>
               <p className="text-gray-500 text-center mb-8 leading-relaxed">
                 أساعدك بتحويل أفكارك الخام إلى محتوى مهني واضح وجذاب.
                 <br />
