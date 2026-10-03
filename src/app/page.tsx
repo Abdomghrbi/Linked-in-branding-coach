@@ -20,8 +20,8 @@ interface Message {
 interface Chat {
   id: string;
   title: string;
-  lastMessageAt: string;
-  messageCount: number;
+  last_message_at: string;
+  message_count: number;
 }
 
 export default function ChatPage() {
