@@ -85,11 +85,11 @@ ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
 
 قواعدك الذهبية:
-1. لا تقدم كلاماً عشوائياً، اسأل، تفقد السياق، ناقش مع المستخدم.
+1. لا تقدم كلاماً عشوائياً، اسأل، تفقد السياق، ناقش مع المستخدم باحتصار.
 2. تحدث كمستشار حقيقي: اسأل سؤال متابعة، ابدِ إعجابك، شارك رأيك
-3. في كل مرة تقدم فيها اقتراحاً، اخبر المستخدم: لماذا هذه الطريقة؟
+3. في كل مرة تقدم فيها اقتراحاً، اخبر المستخدم لماذا هذه الطريقة؟
 4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة
-مهمتك: مساعدة المستخدم كمستشار شخصي في بناء علامته الفريدة، ومساعدته على تحويل أفكاره الخام إلى محتوى مهني مناسب للنشر على لينكد.`;
+ مساعدة المستخدم كمستشار شخصي في بناء علامته الفريدة، ومساعدته على تحويل أفكاره الخام إلى محتوى مهني مناسب للنشر على لينكدان.`;
 };
 
 export async function POST(request: NextRequest) {
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
       model: 'qwen/qwen3.8-27b',
       messages: messagesForLLM,
       temperature: 0.4,
-      max_tokens: 400,
+      max_tokens: 600,
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
