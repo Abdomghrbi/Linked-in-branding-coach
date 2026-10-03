@@ -2,6 +2,8 @@
 
 import { User, Bot, ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
 
 interface MessageProps {
   id: string;
@@ -12,6 +14,7 @@ interface MessageProps {
 }
 
 export default function ChatMessage({ role, content, contentType }: MessageProps) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,43 +26,45 @@ export default function ChatMessage({ role, content, contentType }: MessageProps
   };
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
-    if (isSubmitting) return;
+  if (isSubmitting) return;
 
-    // إلغاء التحدي والتراجع عند الضغط مرتين على نفس الزر
-    if (feedback === type) {
-      setFeedback(null);
-      return;
+  if (feedback === type) {
+    setFeedback(null);
+    return;
+  }
+
+  setIsSubmitting(true);
+  setFeedback(type);
+
+  try {
+    const preferred_length = type === 'like' ? 'concise' : 'detailed';
+    const preferred_tone = type === 'like' ? 'friendly' : 'professional';
+
+    const response = await fetch('/api/user-preferences', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        preferred_length,
+        preferred_tone,
+      }),
+    });
+
+    if (response.ok) {
+      // تحديث بيانات السيرفر وإبطال الكاش فوراً
+      router.refresh(); 
+    } else {
+      throw new Error('فشل حفظ التقييم');
     }
+  } catch (error) {
+    console.error('Error saving feedback:', error);
+    setFeedback(null);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-    setIsSubmitting(true);
-    setFeedback(type);
-
-    try {
-      const preferred_length = type === 'like' ? 'concise' : 'detailed';
-      const preferred_tone = type === 'like' ? 'friendly' : 'professional';
-
-      const response = await fetch('/api/user-preferences', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          preferred_length,
-          preferred_tone,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('فشل حفظ التقييم');
-      }
-    } catch (error) {
-      console.error('Error saving feedback:', error);
-      // إرجاع الحالة للأصل في حال وجود خطأ
-      setFeedback(null);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const isUser = role === 'user';
 
