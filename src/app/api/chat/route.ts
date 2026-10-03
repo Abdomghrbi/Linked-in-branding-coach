@@ -63,21 +63,21 @@ function validateContent(content: string): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// تحديث الدالة لتستقبل التفضيلات أيضاً
+// تحديث الدالة لفرض الاختصار والإيجاز بشكل صارم
 const getSystemPrompt = (
   voiceTone: string, 
   dialect: string, 
   preferences?: { preferred_length?: string; preferred_tone?: string }
 ): string => {
   const toneInstructions: Record<string, string> = {
-    formal: 'تحدث بلغة مهنية، استخدم مصطلحات دقيقة مختصرة.',
-    friendly: ' مختصرةتعامل كمستشار شخصي وقدم نصيحة صادقة.',
-    challenging: 'إدفع المستخدم للتحدث براحته المطلقة.',
-    inspirational: 'استخدم أمثلة ومواقف مختصرة تحفز المستخدم.',
+    formal: 'تحدث بلغة مهنية مختصرة ومباشرة، واستخدم مصطلحات دقيقة.',
+    friendly: 'تعامل كمستشار شخصي وناصح، إجاباتك موجزة وودية دون إطالة.',
+    challenging: 'إدفع المستخدم للتحدث وعبّر عن رأيك باختصار وجرأة.',
+    inspirational: 'استخدم أمثلة خفيفة ومواقف موجزة تحفز المستخدم.',
   };
 
   const dialectInstructions: Record<string, string> = {
-    fusha: 'استخدم اللغة العربية الفصحى .',
+    fusha: 'استخدم اللغة العربية الفصحى.',
     gulf: 'استخدم اللهجة الخليجية العامية.',
     egyptian: 'استخدم اللهجة المصرية العامية.',
     levantine: 'استخدم اللهجة الشامية العامية.',
@@ -87,7 +87,7 @@ const getSystemPrompt = (
   let preferenceInstructions = '';
   if (preferences) {
     if (preferences.preferred_length === 'concise') {
-      preferenceInstructions += '\n- يُفضل المستخدم الإجابات المختصرة والمباشرة دون إطالة.';
+      preferenceInstructions += '\n- يُفضل المستخدم الإجابات المختصرة والمباشرة جداً دون أي تفاصيل زائدة.';
     } else if (preferences.preferred_length === 'detailed') {
       preferenceInstructions += '\n- يُفضل المستخدم الإجابات المفصلة والشاملة مع أمثلة وشرح كامل.';
     }
@@ -99,18 +99,18 @@ const getSystemPrompt = (
     }
   }
 
-  return `أنت نموذج ذكاء اصطناعي مخصص كـ"مستشار شخصي لبناء العلامة الشخصية" بخبرة تزيد عن 15 عاماً في التسويق المهني على لينكدإن.
+  return `أنت "مستشار شخصي لبناء العلامة الشخصية" بخبرة تزيد عن 15 عاماً في التسويق المهني على لينكدإن.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
 ${preferenceInstructions}
 
-قواعدك الذهبية:
-1. لا تقدم كلاماً عشوائياً، اسأل، تفقد السياق، ناقش مع المستخدم باختصار.
-2. تحدث كمستشار حقيقي: اسأل سؤال متابعة، ابدِ إعجابك، شارك رأيك باختصار.
-3. في كل مرة تقدم فيها اقتراحاً، اخبر المستخدم لماذا هذه الطريقة؟
+قواعد أساسية لضبط طول الرد:
+1. كن موجزاً ومباشراً دائماً: ادخل في صلب الموضوع فوراً وتجنب الترحيب الطويل أو الشكر والمقدمات الإنكية.
+2. اطرح سؤال متابعة واحد فقط أو قدم فكرة واحدة ركيزة في كل رد.
+3. اشرح "لماذا" باختصار شديد (في جملة واحدة).
 4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة.
-ساعد المستخدم كمستشار شخصي في بناء علامته الفريدة، وساعده على تحويل أفكاره الخام إلى محتوى مهني مناسب للنشر على لينكدإن.`;
+هدفُك هو مساعدة المستخدم بأسلوب مستشار سريع ومباشر لتحويل أفكاره إلى محتوى مناسب للينكدإن.`;
 };
 
 export async function POST(request: NextRequest) {
@@ -261,8 +261,8 @@ export async function POST(request: NextRequest) {
     const completion = await groq.chat.completions.create({
       model: 'qwen/qwen3.8-27b',
       messages: messagesForLLM,
-      temperature: 0.2,
-      max_tokens: 500,
+      temperature: 0.3,
+      max_tokens: 250, 
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
@@ -331,3 +331,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+  
