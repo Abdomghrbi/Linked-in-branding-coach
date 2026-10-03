@@ -104,11 +104,14 @@ export default function ChatMessage({ role, content, contentType }: MessageProps
           {/* Copy Button */}
           <button
             onClick={handleCopy}
-            className={`absolute top-2 ${isUser ? 'left-2' : 'right-2'} opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg ${isUser ? 'hover:bg-blue-700 text-blue-100' : 'hover:bg-gray-100 text-gray-400'}`}
-            title="نسخ"
+          className={`absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg ${
+         isUser ? 'hover:bg-blue-700 text-blue-100' : 'hover:bg-gray-100 text-gray-400'
+          }`}
+           title="نسخ"
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
+         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+         </button>
+
         </div>
 
         {/* Feedback Buttons (AI only) */}
