@@ -99,7 +99,7 @@ const getSystemPrompt = (
     }
   }
 
-  return `أنت "مستشار شخصي لبناء العلامة الشخصية" بخبرة تزيد عن 15 عاماً في التسويق المهني على لينكدإن.
+  return `أنت نموذج ذكاء اصطناعي مخصص كـ"مستشار شخصي لبناء العلامة الشخصية" بخبرة تزيد عن 15 عاماً في التسويق المهني على لينكدإن.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
@@ -261,8 +261,8 @@ export async function POST(request: NextRequest) {
     const completion = await groq.chat.completions.create({
       model: 'qwen/qwen3.8-27b',
       messages: messagesForLLM,
-      temperature: 0.4,
-      max_tokens: 600,
+      temperature: 0.3,
+      max_tokens: 500,
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
