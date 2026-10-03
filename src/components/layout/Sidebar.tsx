@@ -139,9 +139,9 @@ export default function Sidebar({
                     </h3>
                     <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                       <Clock className="w-3 h-3" />
-                      <span>{formatDate(chat.lastMessageAt)}</span>
+                      <span>{formatDate(chat.last_message_at)}</span>
                       <span>•</span>
-                      <span>{chat.messageCount || 0} رسائل</span>
+                      <span>{chat.message_count || 0} رسائل</span>
                     </div>
                   </div>
                 </button>
