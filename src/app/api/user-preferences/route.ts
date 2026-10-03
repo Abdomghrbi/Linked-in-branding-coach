@@ -1,7 +1,7 @@
-import { createClient } from '@/utils/supabase/server'; // عدّل المسار حسب مشروعك
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
-// 1. جلب تفضيلات المستخدم
+//  جلب تفضيلات المستخدم
 export async function GET() {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -23,7 +23,7 @@ export async function GET() {
   return NextResponse.json({ preferences: data || { preferred_length: 'balanced', preferred_tone: 'friendly' } });
 }
 
-// 2. تحديث تفضيلات المستخدم
+//  تحديث تفضيلات المستخدم
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
