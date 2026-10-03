@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Bot, ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
+import { User, Computer, ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -75,7 +75,7 @@ export default function ChatMessage({ role, content, contentType }: MessageProps
         {isUser ? (
           <User className="w-4 h-4 text-gray-600" />
         ) : (
-          <Bot className="w-4 h-4 text-white" />
+          <Computer className="w-4 h-4 text-white" />
         )}
       </div>
 
