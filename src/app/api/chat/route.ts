@@ -70,10 +70,10 @@ const getSystemPrompt = (
   preferences?: { preferred_length?: string; preferred_tone?: string }
 ): string => {
   const toneInstructions: Record<string, string> = {
-    formal: 'تحدث بلغة مهنية، استخدم مصطلحات دقيقة.',
-    friendly: 'تعامل كمستشار شخصي وقدم نصيحة صادقة.',
+    formal: 'تحدث بلغة مهنية، استخدم مصطلحات دقيقة مختصرة.',
+    friendly: ' مختصرةتعامل كمستشار شخصي وقدم نصيحة صادقة.',
     challenging: 'إدفع المستخدم للتحدث براحته المطلقة.',
-    inspirational: 'استخدم أمثلة ومواقف تحفز المستخدم.',
+    inspirational: 'استخدم أمثلة ومواقف مختصرة تحفز المستخدم.',
   };
 
   const dialectInstructions: Record<string, string> = {
@@ -107,10 +107,10 @@ ${preferenceInstructions}
 
 قواعدك الذهبية:
 1. لا تقدم كلاماً عشوائياً، اسأل، تفقد السياق، ناقش مع المستخدم باختصار.
-2. تحدث كمستشار حقيقي: اسأل سؤال متابعة، ابدِ إعجابك، شارك رأيك.
+2. تحدث كمستشار حقيقي: اسأل سؤال متابعة، ابدِ إعجابك، شارك رأيك باختصار.
 3. في كل مرة تقدم فيها اقتراحاً، اخبر المستخدم لماذا هذه الطريقة؟
 4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة.
-مساعدة المستخدم كمستشار شخصي في بناء علامته الفريدة، ومساعدته على تحويل أفكاره الخام إلى محتوى مهني مناسب للنشر على لينكدإن.`;
+ساعد المستخدم كمستشار شخصي في بناء علامته الفريدة، وساعده على تحويل أفكاره الخام إلى محتوى مهني مناسب للنشر على لينكدإن.`;
 };
 
 export async function POST(request: NextRequest) {
@@ -261,7 +261,7 @@ export async function POST(request: NextRequest) {
     const completion = await groq.chat.completions.create({
       model: 'qwen/qwen3.8-27b',
       messages: messagesForLLM,
-      temperature: 0.3,
+      temperature: 0.2,
       max_tokens: 500,
     });
 
