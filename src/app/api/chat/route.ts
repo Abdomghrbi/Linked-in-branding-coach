@@ -4,6 +4,31 @@ import Groq from 'groq-sdk';
 
 export const dynamic = 'force-dynamic';
 
+// جلب تفضيلات المستخدم من قاعدة البيانات
+const { data: prefs } = await supabase
+  .from('user_preferences')
+  .select('preferred_length, preferred_tone')
+  .eq('user_id', user.id)
+  .single();
+
+// صياغة تعليمات النظام بناءً على التفضيلات
+let systemInstruction = "أنت مساعد ذكي ومفيد.";
+
+if (prefs) {
+  if (prefs.preferred_length === 'concise') {
+    systemInstruction += " يُفضل المستخدم الإجابات المختصرة والمباشرة دون إطالة.";
+  } else if (prefs.preferred_length === 'detailed') {
+    systemInstruction += " يُفضل المستخدم الإجابات المفصلة والشاملة مع أمثلة وشرح كامل.";
+  }
+
+  if (prefs.preferred_tone === 'simple') {
+    systemInstruction += " استخدم أسلوباً بسيطاً وواضحاً وبدون تعقيد لغوي.";
+  } else if (prefs.preferred_tone === 'professional') {
+    systemInstruction += " استخدم نبرة رسمية واحترافية عالية.";
+  }
+}
+
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
