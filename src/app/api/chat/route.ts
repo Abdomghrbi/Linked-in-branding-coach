@@ -4,31 +4,6 @@ import Groq from 'groq-sdk';
 
 export const dynamic = 'force-dynamic';
 
-// جلب تفضيلات المستخدم من قاعدة البيانات
-const { data: prefs } = await supabase
-  .from('user_preferences')
-  .select('preferred_length, preferred_tone')
-  .eq('user_id', user.id)
-  .single();
-
-// صياغة تعليمات النظام بناءً على التفضيلات
-let systemInstruction = "أنت مساعد ذكي ومفيد.";
-
-if (prefs) {
-  if (prefs.preferred_length === 'concise') {
-    systemInstruction += " يُفضل المستخدم الإجابات المختصرة والمباشرة دون إطالة.";
-  } else if (prefs.preferred_length === 'detailed') {
-    systemInstruction += " يُفضل المستخدم الإجابات المفصلة والشاملة مع أمثلة وشرح كامل.";
-  }
-
-  if (prefs.preferred_tone === 'simple') {
-    systemInstruction += " استخدم أسلوباً بسيطاً وواضحاً وبدون تعقيد لغوي.";
-  } else if (prefs.preferred_tone === 'professional') {
-    systemInstruction += " استخدم نبرة رسمية واحترافية عالية.";
-  }
-}
-
-
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
@@ -60,7 +35,6 @@ const MAX_CONTENT_LENGTH = 2000;
 const MIN_CONTENT_LENGTH = 5; 
 
 function sanitizeInput(input: string): string {
-  
   return input.replace(/<[^>]*>/g, '').trim();
 }
 
@@ -89,10 +63,15 @@ function validateContent(content: string): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-const getSystemPrompt = (voiceTone: string, dialect: string): string => {
+// تحديث الدالة لتستقبل التفضيلات أيضاً
+const getSystemPrompt = (
+  voiceTone: string, 
+  dialect: string, 
+  preferences?: { preferred_length?: string; preferred_tone?: string }
+): string => {
   const toneInstructions: Record<string, string> = {
-        formal: 'تحدث بلغة مهنية، استخدم مصطلحات دقيقة.',
-    friendly: 'تعامل  كمستشار شخصي وقدم نصيحة صادقة.',
+    formal: 'تحدث بلغة مهنية، استخدم مصطلحات دقيقة.',
+    friendly: 'تعامل كمستشار شخصي وقدم نصيحة صادقة.',
     challenging: 'إدفع المستخدم للتحدث براحته المطلقة.',
     inspirational: 'استخدم أمثلة ومواقف تحفز المستخدم.',
   };
@@ -104,17 +83,34 @@ const getSystemPrompt = (voiceTone: string, dialect: string): string => {
     levantine: 'استخدم اللهجة الشامية العامية.',
   };
 
+  // صياغة تعليمات التفضيلات المستفادة من التقييمات
+  let preferenceInstructions = '';
+  if (preferences) {
+    if (preferences.preferred_length === 'concise') {
+      preferenceInstructions += '\n- يُفضل المستخدم الإجابات المختصرة والمباشرة دون إطالة.';
+    } else if (preferences.preferred_length === 'detailed') {
+      preferenceInstructions += '\n- يُفضل المستخدم الإجابات المفصلة والشاملة مع أمثلة وشرح كامل.';
+    }
+
+    if (preferences.preferred_tone === 'simple') {
+      preferenceInstructions += '\n- استخدم أسلوباً بسيطاً وواضحاً وبدون تعقيد لغوي.';
+    } else if (preferences.preferred_tone === 'professional') {
+      preferenceInstructions += '\n- استخدم نبرة رسمية واحترافية عالية.';
+    }
+  }
+
   return `أنت "مستشار شخصي لبناء العلامة الشخصية" بخبرة تزيد عن 15 عاماً في التسويق المهني على لينكدإن.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
+${preferenceInstructions}
 
 قواعدك الذهبية:
-1. لا تقدم كلاماً عشوائياً، اسأل، تفقد السياق، ناقش مع المستخدم باحتصار.
-2. تحدث كمستشار حقيقي: اسأل سؤال متابعة، ابدِ إعجابك، شارك رأيك
+1. لا تقدم كلاماً عشوائياً، اسأل، تفقد السياق، ناقش مع المستخدم باختصار.
+2. تحدث كمستشار حقيقي: اسأل سؤال متابعة، ابدِ إعجابك، شارك رأيك.
 3. في كل مرة تقدم فيها اقتراحاً، اخبر المستخدم لماذا هذه الطريقة؟
-4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة
- مساعدة المستخدم كمستشار شخصي في بناء علامته الفريدة، ومساعدته على تحويل أفكاره الخام إلى محتوى مهني مناسب للنشر على لينكدان.`;
+4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة.
+مساعدة المستخدم كمستشار شخصي في بناء علامته الفريدة، ومساعدته على تحويل أفكاره الخام إلى محتوى مهني مناسب للنشر على لينكدإن.`;
 };
 
 export async function POST(request: NextRequest) {
@@ -169,10 +165,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // جلب نبرة الصوت واللهجة
     const { data: userData } = await supabase
       .from('users')
       .select('voice_tone, dialect')
       .eq('id', user.id)
+      .single();
+
+    // جلب تفضيلات المستخدم الخاصة بالنموذج
+    const { data: userPreferences } = await supabase
+      .from('user_preferences')
+      .select('preferred_length, preferred_tone')
+      .eq('user_id', user.id)
       .single();
 
     const voiceTone = userData?.voice_tone || 'formal';
@@ -222,7 +226,7 @@ export async function POST(request: NextRequest) {
       .order('created_at', { ascending: true });
 
     const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: 'system', content: getSystemPrompt(voiceTone, dialect) },
+      { role: 'system', content: getSystemPrompt(voiceTone, dialect, userPreferences || undefined) },
     ];
 
     if (historyMessages && historyMessages.length > 0) {
@@ -318,8 +322,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-     } catch (error) {
-    // Safe error logging - don't expose internal details
+  } catch (error) {
     console.error('Chat API Error:', error instanceof Error ? error.message : 'Unknown error');
     
     return NextResponse.json(
