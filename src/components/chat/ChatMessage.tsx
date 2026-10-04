@@ -3,7 +3,7 @@
 import { User, Computer, ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
+import FeedbackModal from './FeedbackModal'; // استيراد النافذة المنبثقة
 
 interface MessageProps {
   id: string;
@@ -13,11 +13,15 @@ interface MessageProps {
   createdAt?: string;
 }
 
-export default function ChatMessage({ role, content, contentType }: MessageProps) {
+export default function ChatMessage({ id, role, content, contentType }: MessageProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // حالات التحكم بالنافذة المنبثقة
+  const [activeFeedbackType, setActiveFeedbackType] = useState<'like' | 'dislike' | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
@@ -25,46 +29,54 @@ export default function ChatMessage({ role, content, contentType }: MessageProps
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleFeedback = async (type: 'like' | 'dislike') => {
-  if (isSubmitting) return;
+  // 1. فتح النافذة عند الضغط على أزرار التقييم
+  const handleOpenModal = (type: 'like' | 'dislike') => {
+    if (isSubmitting) return;
 
-  if (feedback === type) {
-    setFeedback(null);
-    return;
-  }
-
-  setIsSubmitting(true);
-  setFeedback(type);
-
-  try {
-    const preferred_length = type === 'like' ? 'concise' : 'detailed';
-    const preferred_tone = type === 'like' ? 'friendly' : 'professional';
-
-    const response = await fetch('/api/user-preferences', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        preferred_length,
-        preferred_tone,
-      }),
-    });
-
-    if (response.ok) {
-      // تحديث بيانات السيرفر وإبطال الكاش فوراً
-      router.refresh(); 
-    } else {
-      throw new Error('فشل حفظ التقييم');
+    // إذا ضغط نفس الزر المكتمل سابقاً يلغي التقييم
+    if (feedback === type) {
+      setFeedback(null);
+      return;
     }
-  } catch (error) {
-    console.error('Error saving feedback:', error);
-    setFeedback(null);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
 
+    setActiveFeedbackType(type);
+    setIsModalOpen(true);
+  };
+
+  // 2. إرسال التقييم بعد اختيار السبب من النافذة المنبثقة
+  const handleSubmitFeedback = async (reason: string, comment: string) => {
+    if (!activeFeedbackType) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/user-preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messageId: id, // تمرير معرف الرسالة
+          type: activeFeedbackType, // 'like' أو 'dislike'
+          reason, // السبب المختار
+          comment, // الملاحظة النصية
+        }),
+      });
+
+      if (response.ok) {
+        setFeedback(activeFeedbackType);
+        router.refresh(); 
+      } else {
+        throw new Error('فشل حفظ التقييم');
+      }
+    } catch (error) {
+      console.error('Error saving feedback:', error);
+      setFeedback(null);
+    } finally {
+      setIsSubmitting(false);
+      setIsModalOpen(false);
+    }
+  };
 
   const isUser = role === 'user';
 
@@ -104,47 +116,57 @@ export default function ChatMessage({ role, content, contentType }: MessageProps
           {/* Copy Button */}
           <button
             onClick={handleCopy}
-          className={`absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg ${
-         isUser ? 'hover:bg-blue-700 text-blue-100' : 'hover:bg-gray-100 text-gray-400'
-          }`}
-           title="نسخ"
+            className={`absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg ${
+              isUser ? 'hover:bg-blue-700 text-blue-100' : 'hover:bg-gray-100 text-gray-400'
+            }`}
+            title="نسخ"
           >
-         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-         </button>
-
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
         </div>
 
         {/* Feedback Buttons (AI only) */}
         {!isUser && (
           <div className="flex items-center gap-1 mt-1.5 mr-2">
             <button 
-              onClick={() => handleFeedback('like')}
+              onClick={() => handleOpenModal('like')}
               disabled={isSubmitting}
               className={`p-1 rounded transition-colors ${
                 feedback === 'like' 
                   ? 'text-green-600 bg-green-50' 
                   : 'text-gray-400 hover:bg-gray-100 hover:text-green-600'
               }`} 
-              title="مفيد (تفضيل الإجابات المختصرة)"
+              title="أعجبني"
             >
               <ThumbsUp className="w-3.5 h-3.5" />
             </button>
 
             <button 
-              onClick={() => handleFeedback('dislike')}
+              onClick={() => handleOpenModal('dislike')}
               disabled={isSubmitting}
               className={`p-1 rounded transition-colors ${
                 feedback === 'dislike' 
                   ? 'text-red-600 bg-red-50' 
                   : 'text-gray-400 hover:bg-gray-100 hover:text-red-600'
               }`} 
-              title="غير مفيد (تفضيل الإجابات المفصلة)"
+              title="لم يعجبني"
             >
               <ThumbsDown className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
       </div>
+
+      {/* النافذة المنبثقة للتفاصيل */}
+      {activeFeedbackType && (
+        <FeedbackModal
+          isOpen={isModalOpen}
+          type={activeFeedbackType}
+          messageId={id}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleSubmitFeedback}
+        />
+      )}
     </div>
   );
 }
