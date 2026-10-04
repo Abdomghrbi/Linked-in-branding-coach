@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  computer, Briefcase, Globe, MessageCircle, Sparkles, 
+  Computer, Briefcase, Globe, MessageCircle, Sparkles, 
   ArrowRight, ArrowLeft, Check, Users, ShieldAlert, Sliders, Target
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -156,7 +156,7 @@ export default function OnboardingPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 border border-blue-100 shadow-sm">
-              <computer className="w-8 h-8" />
+              <Computer className="w-8 h-8" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">
               {step === 6 ? 'بصمتك جاهزة تماماً!' : 'بناء بصمتك الرقمية (Personal DNA)'}
