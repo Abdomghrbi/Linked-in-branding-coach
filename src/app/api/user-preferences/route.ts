@@ -13,7 +13,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { messageId, type, reason, comment } = body;
 
-    // حفظ سجل التقييم التفصيلي
+    // 1. التحقق من اكتمال البيانات الأساسية لمنع إدخال قيم فارغة (null)
+    if (!messageId || !type || !reason) {
+      return NextResponse.json(
+        { error: 'بيانات التقييم غير مكتملة (messageId, type, reason مطلوبة)' },
+        { status: 400 }
+      );
+    }
+
+    // 2. التحقق من صحة نوع التقييم
+    if (!['like', 'dislike'].includes(type)) {
+      return NextResponse.json(
+        { error: 'نوع التقييم غير صالح' },
+        { status: 400 }
+      );
+    }
+
+    // 3. حفظ سجل التقييم التفصيلي
     const { error: feedbackError } = await supabase
       .from('message_feedback')
       .insert({
@@ -21,23 +37,27 @@ export async function POST(request: NextRequest) {
         message_id: messageId,
         rating_type: type,
         reason,
-        comment,
+        comment: comment || null,
       });
 
     if (feedbackError) {
       console.error('Error saving message feedback:', feedbackError);
+      return NextResponse.json(
+        { error: 'فشل حفظ سجل التقييم في قاعدة البيانات' },
+        { status: 500 }
+      );
     }
 
-    //  تحليل السبب وتحديث ملف التفضيلات العامة للمستخدم
-    let preferred_length = undefined;
-    let preferred_tone = undefined;
+    // 4. تحليل السبب وتحديث ملف التفضيلات العامة للمستخدم
+    let preferred_length: string | undefined = undefined;
+    let preferred_tone: string | undefined = undefined;
 
     if (reason === 'too_long') preferred_length = 'concise';
     if (reason === 'too_short') preferred_length = 'detailed';
     if (reason === 'wrong_tone') preferred_tone = 'professional';
 
     if (preferred_length || preferred_tone) {
-      await supabase
+      const { error: preferenceError } = await supabase
         .from('user_preferences')
         .upsert(
           {
@@ -48,11 +68,15 @@ export async function POST(request: NextRequest) {
           },
           { onConflict: 'user_id' }
         );
+
+      if (preferenceError) {
+        console.error('Error updating user preferences:', preferenceError);
+      }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: 'تم تسجيل التقييم بنجاح' });
   } catch (error) {
     console.error('Feedback API error:', error);
-    return NextResponse.json({ error: 'خطأ في معالجة التقييم' }, { status: 500 });
+    return NextResponse.json({ error: 'حدث خطأ في معالجة التقييم' }, { status: 500 });
   }
 }
