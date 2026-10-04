@@ -94,54 +94,54 @@ export default function OnboardingPage() {
   };
 
     const handleComplete = async () => {
-    setLoading(true);
-    
-    try {
-      if (!user) {
-        alert('حدث خطأ في الجلسة، يرجى إعادة تسجيل الدخول');
-        router.push('/login');
-        return;
-      }
-
-      // تحويل القواعد النصية إلى مصفوفة نصوص
-      const rulesArray = data.custom_rules
-        ? data.custom_rules
-            .split('\n')
-            .map(r => r.trim())
-            .filter(r => r.length > 0)
-        : [];
-
-      const { error } = await supabase
-        .from('users')
-        .update({
-          full_name: data.full_name,
-          job_title: data.job_title,
-          industry: data.industry,
-          target_audience: data.target_audience || null,
-          linkedin_url: data.linkedin_url || null,
-          voice_tone: data.voice_tone,
-          dialect: data.dialect,
-          custom_rules: rulesArray,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error('Error updating user onboarding:', error);
-        alert(`فشل حفظ البيانات: ${error.message}`);
-        setLoading(false);
-        return;
-      }
-
-      // التوجيه المباشر وإعادة تنشيط الصفحات
-      router.refresh();
-      window.location.href = '/';
-    } catch (err: any) {
-      console.error('Unexpected error:', err);
-      alert('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى.');
-      setLoading(false);
+    const handleComplete = async () => {
+  setLoading(true);
+  
+  try {
+    if (!user) {
+      alert('حدث خطأ في الجلسة، يرجى إعادة تسجيل الدخول');
+      router.push('/login');
+      return;
     }
-  };
+
+    const rulesArray = data.custom_rules
+      ? data.custom_rules
+          .split('\n')
+          .map(r => r.trim())
+          .filter(r => r.length > 0)
+      : [];
+
+    const { error } = await supabase
+      .from('users')
+      .update({
+        full_name: data.full_name,
+        job_title: data.job_title,
+        industry: data.industry,
+        target_audience: data.target_audience || null,
+        linkedin_url: data.linkedin_url || null,
+        voice_tone: data.voice_tone,
+        dialect: data.dialect,
+        custom_rules: rulesArray,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      console.error('Error updating user onboarding:', error);
+      alert(`فشل حفظ البيانات: ${error.message}`);
+      setLoading(false);
+      return;
+    }
+
+    router.refresh();
+    window.location.href = '/';
+  } catch (err: any) {
+    console.error('Unexpected error:', err);
+    alert('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى.');
+    setLoading(false);
+  }
+};
+
 
     
     // تحويل القواعد النصية إلى مصفوفة نصوص
