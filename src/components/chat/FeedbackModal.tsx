@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { X, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface FeedbackModalProps {
-  isOpen: boolean;
-  type: 'like' | 'dislike';
-  messageId: string;
-  onClose: () => void;
-  onSubmit: (reason: string, comment: string) => Promise<void>;
+  isOpen={isModalOpen}
+    type={activeFeedbackType}
+    messageId={id}
+    onClose={() => setIsModalOpen(false)}
+    onSubmit={handleSubmitFeedback}
 }
 
 export default function FeedbackModal({
