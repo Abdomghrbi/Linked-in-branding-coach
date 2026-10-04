@@ -63,11 +63,12 @@ function validateContent(content: string): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// تحديث الدالة لفرض الاختصار والإيجاز بشكل صارم
+// تحديث الدالة لتقبل التقييمات والملاحظات التفصيلية وتمريرها للنموذج
 const getSystemPrompt = (
   voiceTone: string, 
   dialect: string, 
-  preferences?: { preferred_length?: string; preferred_tone?: string }
+  preferences?: { preferred_length?: string; preferred_tone?: string },
+  recentFeedbacks?: Array<{ rating_type: string; reason: string; comment?: string }>
 ): string => {
   const toneInstructions: Record<string, string> = {
     formal: 'تحدث بلغة مهنية مختصرة ومباشرة، واستخدم مصطلحات دقيقة.',
@@ -83,7 +84,7 @@ const getSystemPrompt = (
     levantine: 'استخدم اللهجة الشامية العامية.',
   };
 
-  // صياغة تعليمات التفضيلات المستفادة من التقييمات
+  // 1. صياغة التفضيلات العامة
   let preferenceInstructions = '';
   if (preferences) {
     if (preferences.preferred_length === 'concise') {
@@ -99,14 +100,30 @@ const getSystemPrompt = (
     }
   }
 
+  // 2. حلب الملاحظات التفصيلية السابقة وحقنها كشروط صارمة )
+  let feedbackContext = '';
+  if (recentFeedbacks && recentFeedbacks.length > 0) {
+    feedbackContext += '\n\nتنبيهات وملاحظات سابقة من المستخدم بناءً على تقييماته للإجابات السابقة:';
+    recentFeedbacks.forEach((f) => {
+      if (f.rating_type === 'dislike') {
+        if (f.reason === 'too_long') feedbackContext += '\n- اشتكى المستخدم سابقاً من طول الإجابة، ركز على الإيجاز الشديد.';
+        if (f.reason === 'too_short') feedbackContext += '\n- طلب المستخدم سابقاً تفاصيل أكثر، قدّم شرحاً كافياً.';
+        if (f.reason === 'wrong_tone') feedbackContext += '\n- راجع نبرتك لتكون أكثر تناسباً مع تفضيلات المستخدم.';
+        if (f.reason === 'inaccurate') feedbackContext += '\n- ركز على الدقة وتقديم معلومات قيمة ومؤكدة.';
+        if (f.comment) feedbackContext += `\n- ملاحظة نصية مباشرة من المستخدم: "${f.comment}"`;
+      }
+    });
+  }
+
   return `أنت "مستشار شخصي لبناء العلامة الشخصية" بخبرة تزيد عن 15 عاماً في التسويق المهني على لينكدإن.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
 ${preferenceInstructions}
+${feedbackContext}
 
 قواعد أساسية لضبط طول الرد:
-1، كن موجزاً ومباشراً دائماً: ادخل في صلب الموضوع فوراً وتجنب الترحيب الطويل أو الشكر والمقدمات الطويلة.
+1. كن موجزاً ومباشراً دائماً: ادخل في صلب الموضوع فوراً وتجنب الترحيب الطويل أو الشكر والمقدمات الطويلة.
 2. اطرح سؤال متابعة واحد فقط أو قدم فكرة واحدة ركيزة في كل رد.
 3. اشرح "لماذا" باختصار شديد (في جملة واحدة).
 4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة.
@@ -126,7 +143,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sanitize input
     content = sanitizeInput(content);
 
     const validation = validateContent(content);
@@ -137,7 +153,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate chatId if provided
     if (chatId && typeof chatId !== 'string') {
       return NextResponse.json(
         { error: 'معرف المحادثة غير صالح' },
@@ -165,26 +180,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // جلب نبرة الصوت واللهجة
+    // 1. جلب نبرة الصوت واللهجة
     const { data: userData } = await supabase
       .from('users')
       .select('voice_tone, dialect')
       .eq('id', user.id)
       .single();
 
-    // جلب تفضيلات المستخدم الخاصة بالنموذج
+    // 2. جلب تفضيلات المستخدم العامة
     const { data: userPreferences } = await supabase
       .from('user_preferences')
       .select('preferred_length, preferred_tone')
       .eq('user_id', user.id)
       .single();
 
+    // 3.  جلب آخر 3 تقييمات تفصيلية كتبها المستخدم لمعرفة أسباب عدم الإعجاب
+    const { data: recentFeedbacks } = await supabase
+      .from('message_feedback')
+      .select('rating_type, reason, comment')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(4);
+
     const voiceTone = userData?.voice_tone || 'formal';
     const dialect = userData?.dialect || 'fusha';
 
     let currentChatId = chatId;
 
-    // Verify chat ownership if chatId provided
     if (currentChatId) {
       const { data: chatData, error: chatCheckError } = await supabase
         .from('chats')
@@ -225,25 +247,7 @@ export async function POST(request: NextRequest) {
       .eq('chat_id', currentChatId)
       .order('created_at', { ascending: true });
 
-    const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: 'system', content: getSystemPrompt(voiceTone, dialect, userPreferences || undefined) },
-    ];
-
-    if (historyMessages && historyMessages.length > 0) {
-      // Limit history to prevent token overflow
-      const maxHistory = 50;
-      const recentMessages = historyMessages.slice(-maxHistory);
-      
-      recentMessages.forEach((msg) => {
-        messagesForLLM.push({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
-        });
-      });
-    }
-
-    messagesForLLM.push({ role: 'user', content });
-
+    // حفظ رسالة المستخدم أولاً
     const { error: saveUserError } = await supabase
       .from('messages')
       .insert({
@@ -256,7 +260,37 @@ export async function POST(request: NextRequest) {
 
     if (saveUserError) {
       console.error('Error saving user message:', saveUserError);
+      return NextResponse.json(
+        { error: 'فشل حفظ الرسالة، يرجى إعادة المحاولة' },
+        { status: 500 }
+      );
     }
+
+    // استدعاء دالة getSystemPrompt مع التقييمات الجديدة
+    const systemPromptContent = getSystemPrompt(
+      voiceTone, 
+      dialect, 
+      userPreferences || undefined,
+      recentFeedbacks || undefined
+    );
+
+    const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPromptContent },
+    ];
+
+    if (historyMessages && historyMessages.length > 0) {
+      const maxHistory = 50;
+      const recentMessages = historyMessages.slice(-maxHistory);
+      
+      recentMessages.forEach((msg) => {
+        messagesForLLM.push({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+        });
+      });
+    }
+
+    messagesForLLM.push({ role: 'user', content });
 
     const completion = await groq.chat.completions.create({
       model: 'qwen/qwen3.8-27b',
@@ -331,4 +365,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-  
