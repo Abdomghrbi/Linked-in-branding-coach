@@ -103,7 +103,7 @@ export default function FeedbackModal({
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="اكتب ملاحظاتك لنسعى لتطوير إجابات المساعد..."
+              placeholder="اكتب ملاحظاتك لتحسين استجابة النموذج في الردود القادمة..."
               rows={3}
               className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
             />
