@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { X, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface FeedbackModalProps {
-  isOpen={isModalOpen}
-    type={activeFeedbackType}
-    messageId={id}
-    onClose={() => setIsModalOpen(false)}
-    onSubmit={handleSubmitFeedback}
+  isOpen: boolean;
+  type: 'like' | 'dislike';
+  messageId: string;
+  onClose: () => void;
+  onSubmit: (reason: string, comment: string) => void;
 }
 
 export default function FeedbackModal({
@@ -17,107 +17,113 @@ export default function FeedbackModal({
   onClose,
   onSubmit,
 }: FeedbackModalProps) {
-  const [reason, setReason] = useState('');
-  const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<string>('');
+  const [comment, setComment] = useState<string>('');
 
   if (!isOpen) return null;
 
-  const dislikeReasons = [
-    { id: 'too_long', label: 'الرسالة طويلة جداً ومملة' },
-    { id: 'too_short', label: 'الرسالة قصيرة وغير كافية' },
-    { id: 'wrong_tone', label: 'النبرة غير مناسبة (رسمية/عامية أكثر من اللازم)' },
-    { id: 'inaccurate', label: 'المعلومات غير دقيقة أو غير مفيدة' },
-    { id: 'off_topic', label: 'النموذج لم يفهم الطلب جيداً' },
-  ];
+  const reasons =
+    type === 'dislike'
+      ? [
+          { id: 'too_long', label: 'الإجابة طويلة جداً' },
+          { id: 'too_short', label: 'الإجابة قصيرة جداً' },
+          { id: 'wrong_tone', label: 'النبرة غير مناسبة' },
+          { id: 'inaccurate', label: 'معلومات غير دقيقة' },
+          { id: 'other', label: 'سبب آخر' },
+        ]
+      : [
+          { id: 'helpful', label: 'إجابة مفيدة ودقيقة' },
+          { id: 'good_tone', label: 'النبرة مناسبة جداً' },
+          { id: 'perfect_length', label: 'الطول ممتاز' },
+          { id: 'other', label: 'سبب آخر' },
+        ];
 
-  const likeReasons = [
-    { id: 'perfect_length', label: 'الطول والإيجاز ممتاز' },
-    { id: 'great_tone', label: 'النبرة والأسلوب رائعان' },
-    { id: 'helpful_content', label: 'المحتوى عملي ومفيد جداً' },
-  ];
-
-  const currentReasons = type === 'like' ? likeReasons : dislikeReasons;
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reason) return;
-
-    setIsSubmitting(true);
-    await onSubmit(reason, comment);
-    setIsSubmitting(false);
-    onClose();
+    if (!selectedReason) return;
+    onSubmit(selectedReason, comment);
+    setSelectedReason('');
+    setComment('');
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+        {/* زر الإغلاق */}
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
         >
           <X className="w-5 h-5" />
         </button>
 
+        {/* العنوان */}
         <div className="flex items-center gap-2 mb-4">
           {type === 'like' ? (
-            <ThumbsUp className="w-6 h-6 text-green-500" />
+            <div className="p-2 bg-green-100 text-green-600 rounded-full">
+              <ThumbsUp className="w-5 h-5" />
+            </div>
           ) : (
-            <ThumbsDown className="w-6 h-6 text-red-500" />
+            <div className="p-2 bg-red-100 text-red-600 rounded-full">
+              <ThumbsDown className="w-5 h-5" />
+            </div>
           )}
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-            {type === 'like' ? 'ما الذي أعجبك في الإجابة؟' : 'ما المشكلة في هذه الإجابة؟'}
+          <h3 className="text-lg font-bold text-gray-800">
+            {type === 'like' ? 'ما الذي أعجبك في هذا الرد؟' : 'ما المشكلة في هذا الرد؟'}
           </h3>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* خيارات السبب */}
           <div className="space-y-2">
-            {currentReasons.map((item) => (
-              <label
-                key={item.id}
-                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                  reason === item.id
-                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium'
-                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="feedback_reason"
-                  value={item.id}
-                  checked={reason === item.id}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="hidden"
-                />
-                <span className="text-sm">{item.label}</span>
-              </label>
-            ))}
+            <label className="block text-sm font-medium text-gray-700">اختر السبب الرئيسي:</label>
+            <div className="grid grid-cols-1 gap-2">
+              {reasons.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setSelectedReason(r.id)}
+                  className={`w-full text-right px-4 py-2.5 rounded-xl border text-sm transition-all ${
+                    selectedReason === r.id
+                      ? 'border-blue-600 bg-blue-50 text-blue-700 font-medium'
+                      : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {/* تعليق إضافي */}
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              ملاحظات إضافية (اختياري):
+            </label>
             <textarea
-              placeholder="تفاصيل إضافية (اختياري)..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              rows={2}
-              className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400"
+              placeholder="اكتب ملاحظاتك لنسعى لتطوير إجابات المساعد..."
+              rows={3}
+              className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          {/* أزرار الإجراءات */}
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={!selectedReason}
+              className="flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              إرسال التقييم
+            </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="px-4 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
             >
               إلغاء
-            </button>
-            <button
-              type="submit"
-              disabled={!reason || isSubmitting}
-              className="px-5 py-2 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 transition-colors"
-            >
-              {isSubmitting ? 'جاري الحفظ...' : 'إرسال التقييم'}
             </button>
           </div>
         </form>
