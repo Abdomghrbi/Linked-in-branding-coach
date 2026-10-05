@@ -1,7 +1,7 @@
 'use client';
 
 import { Computer, Menu, LogOut, Settings, DoorOpen } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -18,8 +18,11 @@ interface UserData {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const [showInfo, setShowInfo] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false); // التحكم بالقائمة المنسدلة بالضغط
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -39,17 +42,39 @@ export default function Header({ onMenuClick }: HeaderProps) {
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           email: user.email,
         });
+      } else {
+        setUserData(null);
       }
       
       setLoading(false);
     };
     
     loadUser();
+
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadUser();
+    });
+
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleLogout = async () => {
+    setShowDropdown(false);
     await supabase.auth.signOut();
     router.push('/login');
+    router.refresh();
   };
 
   const getInitials = (name: string | null) => {
@@ -87,8 +112,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* User Avatar / Login */}
         {!loading && (
           userData ? (
-            <div className="relative group">
-              <button className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors">
+            <div className="relative" ref={dropdownRef}>
+              <button 
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors focus:outline-none"
+              >
                 {userData.avatar_url ? (
                   <img 
                     src={userData.avatar_url} 
@@ -106,47 +134,50 @@ export default function Header({ onMenuClick }: HeaderProps) {
               </button>
               
               {/* Dropdown Menu */}
-              <div className="absolute left-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                <div className="flex items-center gap-3 p-2 border-b border-gray-100 mb-1">
-                  {userData.avatar_url ? (
-                    <img 
-                      src={userData.avatar_url} 
-                      alt={userData.full_name || ''}
-                      className="w-9 h-9 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-xs font-bold">
-                      {getInitials(userData.full_name)}
+              {showDropdown && (
+                <div className="absolute left-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-2 z-50">
+                  <div className="flex items-center gap-3 p-2 border-b border-gray-100 mb-1">
+                    {userData.avatar_url ? (
+                      <img 
+                        src={userData.avatar_url} 
+                        alt={userData.full_name || ''}
+                        className="w-9 h-9 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-xs font-bold">
+                        {getInitials(userData.full_name)}
+                      </div>
+                    )}
+                    <div className="text-right">
+                      <p className="font-medium text-sm text-gray-900 truncate max-w-[130px]">
+                        {userData.full_name || 'مستخدم'}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate max-w-[130px]">
+                        {userData.email}
+                      </p>
                     </div>
-                  )}
-                  <div className="text-right">
-                    <p className="font-medium text-sm text-gray-900 truncate max-w-[130px]">
-                      {userData.full_name || 'مستخدم'}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate max-w-[130px]">
-                      {userData.email}
-                    </p>
                   </div>
-                </div>
 
-                {/* زر الإعدادات */}
-                <Link 
-                  href="/settings"
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors text-right"
-                >
-                  <Settings className="w-4 h-4 text-gray-500" />
-                  الإعدادات والتخصيص
-                </Link>
-                
-                {/* زر تسجيل الخروج */}
-                <button 
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors text-right mt-1"
-                >
-                  <LogOut className="w-4 h-4" />
-                  تسجيل الخروج
-                </button>
-              </div>
+                  {/* زر الإعدادات */}
+                  <Link 
+                    href="/settings"
+                    onClick={() => setShowDropdown(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors text-right"
+                  >
+                    <Settings className="w-4 h-4 text-gray-500" />
+                    الإعدادات والتخصيص
+                  </Link>
+                  
+                  {/* زر تسجيل الخروج */}
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors text-right mt-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    تسجيل الخروج
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <a 
