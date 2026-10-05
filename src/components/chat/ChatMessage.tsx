@@ -29,11 +29,11 @@ export default function ChatMessage({ id, role, content, contentType }: MessageP
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // 1. فتح النافذة عند الضغط على أزرار التقييم
+
   const handleOpenModal = (type: 'like' | 'dislike') => {
     if (isSubmitting) return;
 
-    // إذا ضغط نفس الزر المكتمل سابقاً يلغي التقييم
+    
     if (feedback === type) {
       setFeedback(null);
       return;
@@ -43,7 +43,6 @@ export default function ChatMessage({ id, role, content, contentType }: MessageP
     setIsModalOpen(true);
   };
 
-  // 2. إرسال التقييم بعد اختيار السبب من النافذة المنبثقة
   const handleSubmitFeedback = async (reason: string, comment: string) => {
     if (!activeFeedbackType) return;
 
@@ -56,10 +55,10 @@ export default function ChatMessage({ id, role, content, contentType }: MessageP
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messageId: id, // تمرير معرف الرسالة
-          type: activeFeedbackType, // 'like' أو 'dislike'
-          reason, // السبب المختار
-          comment, // الملاحظة النصية
+          messageId: id,
+          type: activeFeedbackType, 
+          reason, 
+          comment, 
         }),
       });
 
