@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { messageId, type, reason, comment } = body;
 
-    // 1. التحقق من اكتمال البيانات الأساسية لمنع إدخال قيم فارغة (null)
+
     if (!messageId || !type || !reason) {
       return NextResponse.json(
         { error: 'بيانات التقييم غير مكتملة (messageId, type, reason مطلوبة)' },
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. التحقق من صحة نوع التقييم
+  
     if (!['like', 'dislike'].includes(type)) {
       return NextResponse.json(
         { error: 'نوع التقييم غير صالح' },
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. حفظ سجل التقييم التفصيلي
+    
     const { error: feedbackError } = await supabase
       .from('message_feedback')
       .insert({
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. تحليل السبب وتحديث ملف التفضيلات العامة للمستخدم
+  
     let preferred_length: string | undefined = undefined;
     let preferred_tone: string | undefined = undefined;
 
