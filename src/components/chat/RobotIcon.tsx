@@ -4,7 +4,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
 }
 
-export default function RobotIcon({ size = 24, className = '', ...props }: IconProps) {
+export default function RobotIcon({ size = 28, className = '', ...props }: IconProps) {
   return (
     <svg
       width={size}
