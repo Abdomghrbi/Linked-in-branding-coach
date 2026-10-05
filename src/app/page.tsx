@@ -274,7 +274,7 @@ export default function ChatPage() {
               {loading && (
                 <div className="flex gap-3 flex-row-reverse">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shrink-0">
-                    <RobotIcon className="w-4 h-4 text-white" />
+                    <RobotIcon className="w-6 h-6 text-white" />
                   </div>
                   <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-5 py-3.5 shadow-sm">
                     <div className="flex items-center gap-2 text-gray-400 text-sm">
