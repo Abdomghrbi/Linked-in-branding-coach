@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation'; // ← جديد
-import { Bot, MessageSquare, Download, X } from 'lucide-react';
+import { MessageSquare, Download, X } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import ChatMessage from '@/components/chat/ChatMessage';
 import ChatInput from '@/components/chat/ChatInput';
 import SuggestedPrompts from '@/components/chat/SuggestedPrompts';
+import RobotIcon from '@/components/chat/RobotIcon';
 
 interface Message {
   id: string;
@@ -273,7 +274,7 @@ export default function ChatPage() {
               {loading && (
                 <div className="flex gap-3 flex-row-reverse">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shrink-0">
-                    <Bot className="w-4 h-4 text-white" />
+                    <RobotIcon className="w-4 h-4 text-white" />
                   </div>
                   <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-5 py-3.5 shadow-sm">
                     <div className="flex items-center gap-2 text-gray-400 text-sm">
