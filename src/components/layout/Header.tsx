@@ -1,9 +1,10 @@
 'use client';
 
-import { Computer, Menu, LogOut, User, DoorOpen } from 'lucide-react';
+import { Computer, Menu, LogOut, Settings, DoorOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -34,7 +35,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           .single();
         
         setUserData(profile || {
-          full_name: user.user_metadata?.full_name || user.email?.split('@') || 'مستخدم',
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'مستخدم',
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           email: user.email,
         });
@@ -53,7 +54,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   const getInitials = (name: string | null) => {
     if (!name) return 'م';
-    return name.split(' ').map(n => n).join('').slice(0, 2).toUpperCase();
+    return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   };
 
   return (
@@ -105,32 +106,42 @@ export default function Header({ onMenuClick }: HeaderProps) {
               </button>
               
               {/* Dropdown Menu */}
-              <div className="absolute left-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                <div className="flex items-center gap-3 pb-3 border-b border-gray-100 mb-2">
+              <div className="absolute left-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                <div className="flex items-center gap-3 p-2 border-b border-gray-100 mb-1">
                   {userData.avatar_url ? (
                     <img 
                       src={userData.avatar_url} 
                       alt={userData.full_name || ''}
-                      className="w-10 h-10 rounded-full object-cover"
+                      className="w-9 h-9 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-xs font-bold">
                       {getInitials(userData.full_name)}
                     </div>
                   )}
                   <div className="text-right">
-                    <p className="font-medium text-sm text-gray-900 truncate max-w-[140px]">
+                    <p className="font-medium text-sm text-gray-900 truncate max-w-[130px]">
                       {userData.full_name || 'مستخدم'}
                     </p>
-                    <p className="text-xs text-gray-500 truncate max-w-[140px]">
+                    <p className="text-xs text-gray-500 truncate max-w-[130px]">
                       {userData.email}
                     </p>
                   </div>
                 </div>
+
+                {/* زر الإعدادات */}
+                <Link 
+                  href="/settings"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors text-right"
+                >
+                  <Settings className="w-4 h-4 text-gray-500" />
+                  الإعدادات والتخصيص
+                </Link>
                 
+                {/* زر تسجيل الخروج */}
                 <button 
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors text-right"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors text-right mt-1"
                 >
                   <LogOut className="w-4 h-4" />
                   تسجيل الخروج
@@ -142,7 +153,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
               href="/login"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors"
             >
-             
               <DoorOpen className="w-4 h-4 rotate-180" /> 
               دخول
             </a>
@@ -153,7 +163,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
       {showInfo && (
         <div className="absolute top-16 left-4 right-4 bg-white border rounded-xl shadow-xl p-4 z-50 max-w-sm mr-auto">
           <p className="text-sm text-gray-600 leading-relaxed">
-          التطبيق في مرحلة تجريبية. إذا كان لديك أي اقتراح فلا تتردد بطرحه
+            التطبيق في مرحلة تجريبية. إذا كان لديك أي اقتراح فلا تتردد بطرحه
           </p>
         </div>
       )}
