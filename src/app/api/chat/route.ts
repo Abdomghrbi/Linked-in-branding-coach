@@ -8,7 +8,7 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// ====== RATE LIMITING ======
+
 const RATE_LIMIT = 30; 
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000; 
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -30,7 +30,6 @@ function checkRateLimit(userId: string): { allowed: boolean; remaining: number }
   return { allowed: true, remaining: RATE_LIMIT - userLimit.count };
 }
 
-// ====== INPUT VALIDATION ======
 const MAX_CONTENT_LENGTH = 2000;
 const MIN_CONTENT_LENGTH = 5; 
 
@@ -63,7 +62,7 @@ function validateContent(content: string): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// تحديث الدالة لتقبل التقييمات والملاحظات التفصيلية وتمريرها للنموذج
+
 const getSystemPrompt = (
   voiceTone: string, 
   dialect: string, 
@@ -84,7 +83,7 @@ const getSystemPrompt = (
     levantine: 'استخدم اللهجة الشامية العامية.',
   };
 
-  // 1. صياغة التفضيلات العامة
+
   let preferenceInstructions = '';
   if (preferences) {
     if (preferences.preferred_length === 'concise') {
@@ -100,7 +99,7 @@ const getSystemPrompt = (
     }
   }
 
-  // 2. حلب الملاحظات التفصيلية السابقة وحقنها كشروط صارمة )
+  
   let feedbackContext = '';
   if (recentFeedbacks && recentFeedbacks.length > 0) {
     feedbackContext += '\n\nتنبيهات وملاحظات سابقة من المستخدم بناءً على تقييماته للإجابات السابقة:';
@@ -136,7 +135,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     let { chatId, content } = body;
 
-    // ====== INPUT VALIDATION ======
+  
     if (!content) {
       return NextResponse.json(
         { error: 'محتوى الرسالة مطلوب' },
@@ -172,7 +171,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ====== RATE LIMITING ======
+    
     const rateLimit = checkRateLimit(user.id);
     if (!rateLimit.allowed) {
       return NextResponse.json(
@@ -181,14 +180,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. جلب نبرة الصوت واللهجة
+
     const { data: userData } = await supabase
       .from('users')
       .select('voice_tone, dialect')
       .eq('id', user.id)
       .single();
 
-    // 2. جلب تفضيلات المستخدم العامة
+    
     const { data: userPreferences } = await supabase
       .from('user_preferences')
       .select('preferred_length, preferred_tone')
@@ -201,7 +200,7 @@ export async function POST(request: NextRequest) {
       .select('rating_type, reason, comment')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(4);
+      .limit(8);
 
     const voiceTone = userData?.voice_tone || 'formal';
     const dialect = userData?.dialect || 'fusha';
@@ -248,7 +247,7 @@ export async function POST(request: NextRequest) {
       .eq('chat_id', currentChatId)
       .order('created_at', { ascending: true });
 
-    // حفظ رسالة المستخدم أولاً
+  
     const { error: saveUserError } = await supabase
       .from('messages')
       .insert({
@@ -267,7 +266,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // استدعاء دالة getSystemPrompt مع التقييمات الجديدة
+    
     const systemPromptContent = getSystemPrompt(
       voiceTone, 
       dialect, 
