@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import RobotIcon from '@/components/chat/RobotIcon';
+import RobotIcon from '../components/chat/RobotIcon';
 
 interface HeaderProps {
   onMenuClick?: () => void;
