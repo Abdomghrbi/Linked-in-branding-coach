@@ -1,10 +1,11 @@
 'use client';
 
-import { RobotIcon, Menu, LogOut, Settings, DoorOpen } from 'lucide-react';
+import { Menu, LogOut, Settings, DoorOpen } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import RobotIcon from './RobotIcon';
 
 interface HeaderProps {
   onMenuClick?: () => void;
