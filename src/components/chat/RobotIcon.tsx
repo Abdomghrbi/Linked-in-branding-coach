@@ -4,28 +4,26 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
 }
 
-export default function RobotIcon({ size = 28, className = '', ...props }: IconProps) {
+export default function RobotIcon({ size = 24, className = 'w-6 h-6', ...props }: IconProps) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox="20 8 60 72" 
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`inline-block ${className}`}
+      className={`inline-block shrink-0 ${className}`}
       {...props}
     >
-    
-      <mask id="robot-mask">
+      {/* قناع تفريغ العيون والفم */}
+      <mask id="robot-mask-large">
         <rect width="100" height="100" fill="white" />
-        {/* العين اليسرى واليمنى */}
         <circle cx="43" cy="25.5" r="9.5" fill="black" />
         <circle cx="57" cy="25.5" r="9.5" fill="black" />
-        {/* الفم */}
         <rect x="37" y="58.5" width="26" height="5.5" rx="2.75" fill="black" />
       </mask>
 
-      <g mask="url(#robot-mask)" fill="currentColor">
+      <g mask="url(#robot-mask-large)" fill="currentColor">
         {/* الرأس */}
         <rect x="33" y="12" width="34" height="27" rx="7" />
         {/* الجسم */}
