@@ -1,9 +1,10 @@
 'use client';
 
-import { User, Computer, ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
+import { User, ThumbsUp, ThumbsDown, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import FeedbackModal from './FeedbackModal'; // استيراد النافذة المنبثقة
+import RobotIcon from './RobotIcon';
 
 interface MessageProps {
   id: string;
@@ -86,7 +87,7 @@ export default function ChatMessage({ id, role, content, contentType }: MessageP
         {isUser ? (
           <User className="w-4 h-4 text-gray-600" />
         ) : (
-          <Computer className="w-4 h-4 text-white" />
+          <RobotIcon className="w-4 h-4 text-white" />
         )}
       </div>
 
