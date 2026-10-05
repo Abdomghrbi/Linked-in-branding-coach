@@ -19,8 +19,7 @@ export default function ChatMessage({ id, role, content, contentType }: MessageP
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // حالات التحكم بالنافذة المنبثقة
+
   const [activeFeedbackType, setActiveFeedbackType] = useState<'like' | 'dislike' | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -87,7 +86,7 @@ export default function ChatMessage({ id, role, content, contentType }: MessageP
         {isUser ? (
           <User className="w-4 h-4 text-gray-600" />
         ) : (
-          <RobotIcon className="w-4 h-4 text-white" />
+          <RobotIcon className="w-6 h-6 text-white" />
         )}
       </div>
 
