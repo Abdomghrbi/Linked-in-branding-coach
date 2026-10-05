@@ -40,19 +40,33 @@ export default function FeedbackModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation(); 
+
     if (!selectedReason) return;
     onSubmit(selectedReason, comment);
+    
+  
     setSelectedReason('');
     setComment('');
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()} //  منع إغلاق المودال عند الضغط بداخل المحتوى
+      >
         {/* زر الإغلاق */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
+          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
