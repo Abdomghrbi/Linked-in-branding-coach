@@ -1,6 +1,6 @@
 'use client';
 
-import { Computer, Menu, LogOut, Settings, DoorOpen } from 'lucide-react';
+import { RobotIcon, Menu, LogOut, Settings, DoorOpen } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -93,7 +93,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </button>
         
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg">
-          <Computer className="w-6 h-6 text-white" />
+          <RobotIcon className="w-6 h-6 text-white" />
         </div>
         
         <div>
