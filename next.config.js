@@ -1,18 +1,15 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  clientsClaim: true,
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst', 
-      options: {
-        cacheName: 'offlineCache',
-        networkTimeoutSeconds: 5,
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, max-age=0, must-revalidate',
+          },
+        ],
       },
-    },
-  ],
-});
-module.exports = withPWA({
-});
+    ];
+  },
+};
