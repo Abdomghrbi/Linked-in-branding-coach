@@ -67,14 +67,39 @@ export default function SettingsPage() {
     fetchUserData();
   }, []);
 
-  
   const userRulesList = form.custom_rules
     ? form.custom_rules.split('\n').filter((r) => r.trim().length > 0)
     : [];
 
-  const handleDeleteRule = (indexToDelete: number) => {
-    const updated = userRulesList.filter((_, idx) => idx !== indexToDelete);
-    setForm({ ...form, custom_rules: updated.join('\n') });
+  
+  const updateRulesInDb = async (updatedRulesArray: string[]) => {
+    const updatedString = updatedRulesArray.join('\n');
+    setForm((prev) => ({ ...prev, custom_rules: updatedString }));
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from('users')
+        .update({
+          custom_rules: updatedRulesArray,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+    }
+  };
+
+  
+  const handleAddQuickRule = async () => {
+    if (!newRuleInput.trim()) return;
+    const updatedRules = [...userRulesList, newRuleInput.trim()];
+    setNewRuleInput('');
+    await updateRulesInDb(updatedRules);
+  };
+
+
+  const handleDeleteRule = async (indexToDelete: number) => {
+    const updatedRules = userRulesList.filter((_, idx) => idx !== indexToDelete);
+    await updateRulesInDb(updatedRules);
   };
 
   const handleStartEdit = (index: number, currentText: string) => {
@@ -82,59 +107,20 @@ export default function SettingsPage() {
     setEditingText(currentText);
   };
 
-  const handleSaveEdit = (index: number) => {
-    const updated = [...userRulesList];
+
+  const handleSaveEdit = async (index: number) => {
+    const updatedRules = [...userRulesList];
     if (editingText.trim().length > 0) {
-      updated[index] = editingText.trim();
+      updatedRules[index] = editingText.trim();
     } else {
-      updated.splice(index, 1);
+      updatedRules.splice(index, 1);
     }
-    setForm({ ...form, custom_rules: updated.join('\n') });
     setEditingIndex(null);
     setEditingText('');
+    await updateRulesInDb(updatedRules);
   };
 
-const handleAddQuickRule = async () => {
-  if (!newRuleInput.trim()) return;
-
-  const updatedRules = [...userRulesList, newRuleInput.trim()];
-  const updatedRulesString = updatedRules.join('\n');
-
-
-  setForm({ ...form, custom_rules: updatedRulesString });
-  setNewRuleInput('');
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    await supabase
-      .from('users')
-      .update({
-        custom_rules: updatedRules,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', user.id);
-  }
-};
-
-const handleDeleteRule = async (indexToDelete: number) => {
-  const updatedRules = userRulesList.filter((_, idx) => idx !== indexToDelete);
-  const updatedRulesString = updatedRules.join('\n');
-
-  setForm({ ...form, custom_rules: updatedRulesString });
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    await supabase
-      .from('users')
-      .update({
-        custom_rules: updatedRules,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', user.id);
-  }
-};
-
-
+  
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -292,7 +278,7 @@ const handleDeleteRule = async (indexToDelete: number) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          
+              {/* قواعد النظام الافتراضية */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -319,6 +305,7 @@ const handleDeleteRule = async (indexToDelete: number) => {
                 </p>
               </div>
 
+              {/* قواعد المستخدم الخاصة */}
               <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -334,7 +321,7 @@ const handleDeleteRule = async (indexToDelete: number) => {
                   {userRulesList.length === 0 ? (
                     <div className="text-center py-6 bg-white/60 rounded-xl border border-dashed border-slate-200">
                       <p className="text-xs text-slate-400">لا توجد قواعد خاصة مضافة حالياً.</p>
-                      <p className="text-[11px] text-slate-400 mt-1">اكتب قاعدة في الحقل أعلاه واضغط حفظ.</p>
+                      <p className="text-[11px] text-slate-400 mt-1">اكتب قاعدة في الحقل أوالإضافة السريعة بالأسفل.</p>
                     </div>
                   ) : (
                     <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
@@ -391,7 +378,7 @@ const handleDeleteRule = async (indexToDelete: number) => {
                   )}
                 </div>
 
-              
+                {/* الإضافة السريعة مع الحفظ الفوري */}
                 <div className="mt-3 pt-2 border-t border-blue-100 flex items-center gap-1.5">
                   <input
                     type="text"
@@ -410,7 +397,7 @@ const handleDeleteRule = async (indexToDelete: number) => {
                     type="button"
                     onClick={handleAddQuickRule}
                     className="p-1.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shrink-0"
-                    title="إضافة"
+                    title="إضافة وحفظ"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
