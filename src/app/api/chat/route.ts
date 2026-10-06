@@ -30,7 +30,7 @@ function checkRateLimit(userId: string): { allowed: boolean; remaining: number }
   return { allowed: true, remaining: RATE_LIMIT - userLimit.count };
 }
 
-const MAX_CONTENT_LENGTH = 2000;
+const MAX_CONTENT_LENGTH = 1000;
 const MIN_CONTENT_LENGTH = 5; 
 
 function sanitizeInput(input: string): string {
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single();
 
-    // 3.  جلب آخر 3 تقييمات تفصيلية كتبها المستخدم لمعرفة أسباب عدم الإعجاب
+    // 3.  جلب آخر 8 تقييمات تفصيلية كتبها المستخدم لمعرفة أسباب عدم الإعجاب
     const { data: recentFeedbacks } = await supabase
       .from('message_feedback')
       .select('rating_type, reason, comment')
@@ -296,7 +296,7 @@ export async function POST(request: NextRequest) {
       model: 'qwen/qwen3.8-27b',
       messages: messagesForLLM,
       temperature: 0.3,
-      max_tokens: 250, 
+      max_tokens: 350, 
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
