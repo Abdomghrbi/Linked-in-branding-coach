@@ -94,12 +94,46 @@ export default function SettingsPage() {
     setEditingText('');
   };
 
-  const handleAddQuickRule = () => {
-    if (!newRuleInput.trim()) return;
-    const updated = [...userRulesList, newRuleInput.trim()];
-    setForm({ ...form, custom_rules: updated.join('\n') });
-    setNewRuleInput('');
-  };
+const handleAddQuickRule = async () => {
+  if (!newRuleInput.trim()) return;
+
+  const updatedRules = [...userRulesList, newRuleInput.trim()];
+  const updatedRulesString = updatedRules.join('\n');
+
+
+  setForm({ ...form, custom_rules: updatedRulesString });
+  setNewRuleInput('');
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await supabase
+      .from('users')
+      .update({
+        custom_rules: updatedRules,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+  }
+};
+
+const handleDeleteRule = async (indexToDelete: number) => {
+  const updatedRules = userRulesList.filter((_, idx) => idx !== indexToDelete);
+  const updatedRulesString = updatedRules.join('\n');
+
+  setForm({ ...form, custom_rules: updatedRulesString });
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await supabase
+      .from('users')
+      .update({
+        custom_rules: updatedRules,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+  }
+};
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
