@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { User, Save, Check, ArrowRight, Sparkles } from 'lucide-react';
+import { User, Save, Check, ArrowRight, Sparkles, ShieldCheck, Settings2, Trash2, Edit3, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
@@ -12,6 +12,13 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [saved, setSaved] = useState(false);
+  
+  const systemRules = [
+    'عدم استخدام النجوم (*) في التنسيق نهائياً',
+    'الالتزام بنبرة احترافية وتفاعلية ملائمة لـ LinkedIn',
+    'تقديم إجابات مباشرة ومختصرة بدون مقدمات طويلة',
+    'التركيز على بناء البصمة الشخصية وتطوير المحتوى',
+  ];
 
   const [form, setForm] = useState({
     full_name: '',
@@ -23,6 +30,10 @@ export default function SettingsPage() {
     dialect: 'fusha',
     custom_rules: '',
   });
+
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState('');
+  const [newRuleInput, setNewRuleInput] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -55,6 +66,40 @@ export default function SettingsPage() {
 
     fetchUserData();
   }, []);
+
+  
+  const userRulesList = form.custom_rules
+    ? form.custom_rules.split('\n').filter((r) => r.trim().length > 0)
+    : [];
+
+  const handleDeleteRule = (indexToDelete: number) => {
+    const updated = userRulesList.filter((_, idx) => idx !== indexToDelete);
+    setForm({ ...form, custom_rules: updated.join('\n') });
+  };
+
+  const handleStartEdit = (index: number, currentText: string) => {
+    setEditingIndex(index);
+    setEditingText(currentText);
+  };
+
+  const handleSaveEdit = (index: number) => {
+    const updated = [...userRulesList];
+    if (editingText.trim().length > 0) {
+      updated[index] = editingText.trim();
+    } else {
+      updated.splice(index, 1);
+    }
+    setForm({ ...form, custom_rules: updated.join('\n') });
+    setEditingIndex(null);
+    setEditingText('');
+  };
+
+  const handleAddQuickRule = () => {
+    if (!newRuleInput.trim()) return;
+    const updated = [...userRulesList, newRuleInput.trim()];
+    setForm({ ...form, custom_rules: updated.join('\n') });
+    setNewRuleInput('');
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,7 +228,7 @@ export default function SettingsPage() {
             <textarea
               value={form.custom_rules}
               onChange={(e) => setForm({ ...form, custom_rules: e.target.value })}
-              rows={4}
+              rows={3}
               placeholder="اكتب كل قاعدة في سطر مستقِل (مثال: تجنب النجوم، ركز على الأمثلة...)"
               className="w-full p-3.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
             />
@@ -204,8 +249,144 @@ export default function SettingsPage() {
               {loading ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
             </button>
           </div>
+
+          <div className="pt-6 border-t border-slate-100 space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <Settings2 className="w-4 h-4 text-blue-600" />
+              القواعد والتخصيصات المطبقة حالياً
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      قواعد النظام الافتراضية
+                    </span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">
+                      ثابتة
+                    </span>
+                  </div>
+
+                  <ul className="space-y-2 text-xs text-slate-600">
+                    {systemRules.map((rule, idx) => (
+                      <li key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-slate-100 shadow-2xs">
+                        <span className="text-blue-500 font-bold">•</span>
+                        <span>{rule}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-3 pt-2 border-t border-slate-200/60">
+                  * هذه القواعد يلتزم بها المساعد الذكي تلقائياً للجميع.
+                </p>
+              </div>
+
+              <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <User className="w-4 h-4 text-blue-600" />
+                      قواعدك الخاصة المُخصصة
+                    </span>
+                    <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">
+                      {userRulesList.length} قواعد
+                    </span>
+                  </div>
+
+                  {userRulesList.length === 0 ? (
+                    <div className="text-center py-6 bg-white/60 rounded-xl border border-dashed border-slate-200">
+                      <p className="text-xs text-slate-400">لا توجد قواعد خاصة مضافة حالياً.</p>
+                      <p className="text-[11px] text-slate-400 mt-1">اكتب قاعدة في الحقل أعلاه واضغط حفظ.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                      {userRulesList.map((rule, index) => (
+                        <div
+                          key={index}
+                          className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between gap-2"
+                        >
+                          {editingIndex === index ? (
+                            <div className="flex items-center gap-1.5 w-full">
+                              <input
+                                type="text"
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                className="w-full text-xs p-1.5 border border-blue-400 rounded-lg outline-none"
+                                autoFocus
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEdit(index)}
+                                className="p-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="text-xs text-slate-700 font-medium break-words">
+                                {rule}
+                              </span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEdit(index, rule)}
+                                  className="p-1 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                  title="تعديل"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteRule(index)}
+                                  className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                  title="حذف"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+              
+                <div className="mt-3 pt-2 border-t border-blue-100 flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={newRuleInput}
+                    onChange={(e) => setNewRuleInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddQuickRule();
+                      }
+                    }}
+                    placeholder="إضافة قاعدة جديدة..."
+                    className="w-full text-xs px-3 py-1.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddQuickRule}
+                    className="p-1.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shrink-0"
+                    title="إضافة"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </form>
       </div>
     </div>
   );
-          }
+}
