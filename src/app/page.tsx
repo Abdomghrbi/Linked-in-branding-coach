@@ -41,7 +41,7 @@ export default function ChatPage() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, loading]);
 
   useEffect(() => {
     const bannerDismissed = localStorage.getItem('pwa-banner-dismissed');
@@ -205,7 +205,7 @@ export default function ChatPage() {
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex h-screen bg-gray-50" dir="rtl">
+    <div className="flex h-[100dvh] bg-gray-50 overflow-hidden relative" dir="rtl">
       {showInstallBanner && (
         <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white p-3 z-[60] shadow-lg">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
@@ -243,16 +243,16 @@ export default function ChatPage() {
         onClose={() => setSidebarOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col h-full min-w-0 relative">
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
         <div
           ref={scrollRef}
-          className={`flex-1 overflow-y-auto px-4 py-6 space-y-6 ${showInstallBanner ? 'pt-16' : ''}`}
+          className={`flex-1 overflow-y-auto px-4 pt-6 pb-28 space-y-6 ${showInstallBanner ? 'mt-12' : ''}`}
         >
           {!hasMessages ? (
-            <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto">
-              <p className="text-gray-500 text-center mb-8 leading-relaxed">
+            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-220px)] max-w-2xl mx-auto my-auto">
+              <p className="text-gray-500 text-center mb-8 leading-relaxed text-sm md:text-base">
                 أساعدك بتحويل أفكارك الخام إلى محتوى مهني واضح وجذاب.
                 <br />
                 أخبرني عن تجربتك أو فكرتك، هيا نبدأ...
@@ -290,7 +290,11 @@ export default function ChatPage() {
           )}
         </div>
 
-        <ChatInput onSend={sendMessage} loading={loading} />
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-50 via-gray-50/95 to-transparent pt-4 pb-2 z-20">
+          <div className="max-w-3xl mx-auto px-4">
+            <ChatInput onSend={sendMessage} loading={loading} />
+          </div>
+        </div>
       </div>
     </div>
   );
