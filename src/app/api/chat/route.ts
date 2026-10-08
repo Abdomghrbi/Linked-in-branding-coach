@@ -8,7 +8,6 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-
 const RATE_LIMIT = 30; 
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000; 
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -30,21 +29,22 @@ function checkRateLimit(userId: string): { allowed: boolean; remaining: number }
   return { allowed: true, remaining: RATE_LIMIT - userLimit.count };
 }
 
-const MAX_CONTENT_LENGTH = 1000;
-const MIN_CONTENT_LENGTH = 5; 
+const MAX_CONTENT_LENGTH = 2000;
+const MIN_CONTENT_LENGTH = 1; 
 
 function sanitizeInput(input: string): string {
   return input.replace(/<[^>]*>/g, '').trim();
 }
 
-function validateContent(content: string): { valid: boolean; error?: string } {
-  if (!content || content.length < MIN_CONTENT_LENGTH) {
+function validateContent(content: string, hasImage: boolean): { valid: boolean; error?: string } {
+  if (!hasImage && (!content || content.length < MIN_CONTENT_LENGTH)) {
     return { valid: false, error: 'محتوى الرسالة قصير جداً' };
   }
   
   if (content.length > MAX_CONTENT_LENGTH) {
     return { valid: false, error: `الرسالة طويلة جداً. الحد الأقصى ${MAX_CONTENT_LENGTH} حرف` };
   }
+  
   const forbiddenPatterns = [
     /system\s*:/i,
     /ignore\s*previous/i,
@@ -61,7 +61,6 @@ function validateContent(content: string): { valid: boolean; error?: string } {
 
   return { valid: true };
 }
-
 
 const getSystemPrompt = (
   voiceTone: string, 
@@ -83,7 +82,6 @@ const getSystemPrompt = (
     levantine: 'استخدم اللهجة الشامية العامية.',
   };
 
-
   let preferenceInstructions = '';
   if (preferences) {
     if (preferences.preferred_length === 'concise') {
@@ -99,7 +97,6 @@ const getSystemPrompt = (
     }
   }
 
-  
   let feedbackContext = '';
   if (recentFeedbacks && recentFeedbacks.length > 0) {
     feedbackContext += '\n\nتنبيهات وملاحظات سابقة من المستخدم بناءً على تقييماته للإجابات السابقة:';
@@ -114,7 +111,7 @@ const getSystemPrompt = (
     });
   }
 
-  return `أنت "مستشار شخصي لبناء العلامة الشخصية" لديك خبرة كبيرة في التسويق المهني على لينكدإن.
+  return `أنت "مستشار شخصي لبناء العلامة الشخصية" متخصص في التسويق المهني على لينكدإن.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
@@ -123,29 +120,21 @@ ${feedbackContext}
 
 قواعد أساسية لضبط طول الرد:
 1. كن موجزاً ومباشراً دائماً: ادخل في صلب الموضوع فوراً وتجنب الترحيب الطويل أو الشكر والمقدمات الطويلة.
-2. اطرح سؤال متابعة واحد فقط أو قدم فكرة واحدة ركيزة في كل رد.
-3. اشرح "لماذا" باختصار شديد (في جملة واحدة).
-4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة.
-5. لا تستخدم تنسيق ماركداون.
+2. إذا تم إرفاق صورة، قم بتحليلها بدقة وربطها بنصيحة تخص لينكدإن وبناء المحتوى المهني.
+3. اطرح سؤال متابعة واحد فقط أو قدم فكرة واحدة ركيزة في كل رد.
+4. اشرح "لماذا" باختصار شديد (في جملة واحدة).
+5. استخدم المصطلحات التقنية الإنجليزية عند الضرورة.
 هدفُك هو مساعدة المستخدم بأسلوب مستشار سريع ومباشر لتحويل حسابه إلى علامة شخصية فريدة على لينكدإن.`;
 };
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    let { chatId, content } = body;
+    let { chatId, content, image } = body;
 
-  
-    if (!content) {
-      return NextResponse.json(
-        { error: 'محتوى الرسالة مطلوب' },
-        { status: 400 }
-      );
-    }
+    content = content ? sanitizeInput(content) : '';
 
-    content = sanitizeInput(content);
-
-    const validation = validateContent(content);
+    const validation = validateContent(content, !!image);
     if (!validation.valid) {
       return NextResponse.json(
         { error: validation.error },
@@ -171,7 +160,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    
     const rateLimit = checkRateLimit(user.id);
     if (!rateLimit.allowed) {
       return NextResponse.json(
@@ -180,21 +168,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-
     const { data: userData } = await supabase
       .from('users')
       .select('voice_tone, dialect')
       .eq('id', user.id)
       .single();
 
-    
     const { data: userPreferences } = await supabase
       .from('user_preferences')
       .select('preferred_length, preferred_tone')
       .eq('user_id', user.id)
       .single();
 
-    // 3.  جلب آخر 8 تقييمات تفصيلية كتبها المستخدم لمعرفة أسباب عدم الإعجاب
     const { data: recentFeedbacks } = await supabase
       .from('message_feedback')
       .select('rating_type, reason, comment')
@@ -247,14 +232,14 @@ export async function POST(request: NextRequest) {
       .eq('chat_id', currentChatId)
       .order('created_at', { ascending: true });
 
-  
+    // حفظ رسالة المستخدم
     const { error: saveUserError } = await supabase
       .from('messages')
       .insert({
         chat_id: currentChatId,
         role: 'user',
-        content: content,
-        content_type: 'text',
+        content: content || '[صورة مرفقة]',
+        content_type: image ? 'image' : 'text',
         sequence_number: (historyMessages?.length || 0) + 1,
       });
 
@@ -266,7 +251,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    
     const systemPromptContent = getSystemPrompt(
       voiceTone, 
       dialect, 
@@ -274,12 +258,12 @@ export async function POST(request: NextRequest) {
       recentFeedbacks || undefined
     );
 
-    const messagesForLLM: Groq.Chat.Completions.ChatCompletionMessageParam[] = [
+    const messagesForLLM: any[] = [
       { role: 'system', content: systemPromptContent },
     ];
 
     if (historyMessages && historyMessages.length > 0) {
-      const maxHistory = 50;
+      const maxHistory = 20;
       const recentMessages = historyMessages.slice(-maxHistory);
       
       recentMessages.forEach((msg) => {
@@ -290,13 +274,31 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    messagesForLLM.push({ role: 'user', content });
+    // إعداد رسالة المستخدم الحالية بأسلوب Multimodal إذا احتوت على صورة
+    if (image) {
+      const userContentArray: any[] = [];
+      if (content) {
+        userContentArray.push({ type: 'text', text: content });
+      }
+      userContentArray.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:image/jpeg;base64,${image}`,
+        },
+      });
+      messagesForLLM.push({ role: 'user', content: userContentArray });
+    } else {
+      messagesForLLM.push({ role: 'user', content });
+    }
+
+    // استخدام نموذج يدعم الرؤية من Groq
+    const modelToUse = image ? 'llama-3.2-11b-vision-preview' : 'qwen/qwen3.8-27b';
 
     const completion = await groq.chat.completions.create({
-      model: 'qwen/qwen3.8-27b',
+      model: modelToUse,
       messages: messagesForLLM,
       temperature: 0.3,
-      max_tokens: 350, 
+      max_tokens: 500, 
     });
 
     const aiResponse = completion.choices[0]?.message?.content || '';
