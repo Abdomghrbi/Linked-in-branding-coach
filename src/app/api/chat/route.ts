@@ -216,9 +216,8 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (chatError) {
-        console.error('Chat creation error:', chatError);
         return NextResponse.json(
-          { error: 'فشل إنشاء المحادثة' },
+          { error: `فشل إنشاء المحادثة: ${chatError.message}` },
           { status: 500 }
         );
       }
@@ -232,21 +231,19 @@ export async function POST(request: NextRequest) {
       .eq('chat_id', currentChatId)
       .order('created_at', { ascending: true });
 
-
     const { error: saveUserError } = await supabase
-  .from('messages')
-  .insert({
-    chat_id: currentChatId,
-    role: 'user',
-    content: content ? `${content} [صورة مرفقة]` : '[صورة مرفقة]',
-    content_type: 'text',
-    sequence_number: (historyMessages?.length || 0) + 1,
-  });
+      .from('messages')
+      .insert({
+        chat_id: currentChatId,
+        role: 'user',
+        content: content ? `${content} [صورة مرفقة]` : '[صورة مرفقة]',
+        content_type: 'text',
+        sequence_number: (historyMessages?.length || 0) + 1,
+      });
 
     if (saveUserError) {
-      console.error('Error saving user message:', saveUserError);
       return NextResponse.json(
-        { error: 'فشل حفظ الرسالة، يرجى إعادة المحاولة' },
+        { error: `فشل حفظ الرسالة: ${saveUserError.message}` },
         { status: 500 }
       );
     }
@@ -263,35 +260,47 @@ export async function POST(request: NextRequest) {
     ];
 
     if (historyMessages && historyMessages.length > 0) {
-      const maxHistory = 20;
+      const maxHistory = 10;
       const recentMessages = historyMessages.slice(-maxHistory);
       
       recentMessages.forEach((msg) => {
         messagesForLLM.push({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: String(msg.content || ''),
         });
       });
     }
 
-    // إعداد رسالة المستخدم الحالية بأسلوب Multimodal إذا احتوت على صورة
     if (image) {
-      const userContentArray: any[] = [];
-      if (content) {
-        userContentArray.push({ type: 'text', text: content });
-      }
-      userContentArray.push({
-        type: 'image_url',
-        image_url: {
-          url: `data:image/jpeg;base64,${image}`,
+      const formattedImageUrl = image.startsWith('data:') 
+        ? image 
+        : `data:image/jpeg;base64,${image}`;
+
+      const userContentArray: any[] = [
+        {
+          type: 'text',
+          text: content && content.trim() !== '' ? content : 'حلل هذه الصورة وركّز على ما يفيد في محتوى لينكدإن بناءً على سياق المحادثة.',
         },
+        {
+          type: 'image_url',
+          image_url: {
+            url: formattedImageUrl,
+          },
+        },
+      ];
+
+      messagesForLLM.push({
+        role: 'user',
+        content: userContentArray,
       });
-      messagesForLLM.push({ role: 'user', content: userContentArray });
     } else {
-      messagesForLLM.push({ role: 'user', content });
+      messagesForLLM.push({
+        role: 'user',
+        content: content,
+      });
     }
 
-    // استخدام نموذج يدعم الرؤية من Groq
+    
     const modelToUse = image ? 'llama-3.2-11b-vision-preview' : 'qwen/qwen3.8-27b';
 
     const completion = await groq.chat.completions.create({
@@ -358,12 +367,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-  } catch (error) {
-    console.error('Chat API Error:', error instanceof Error ? error.message : 'Unknown error');
+  } catch (error: any) {
+    
+    const errorMessage = error?.message || (typeof error === 'string' ? error : 'خطأ غير معروف');
     
     return NextResponse.json(
-      { error: 'حدث خطأ في معالجة الطلب' },
+      { error: `تفاصيل الخطأ: ${errorMessage}` },
       { status: 500 }
     );
   }
-}
+  }
+  
