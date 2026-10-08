@@ -25,7 +25,7 @@ const prompts = [
   },
   {
     icon: Briefcase,
-    text: 'أريد إبراز مجال عملي، كيف ماهي الخطوات المناسبة؟',
+    text: 'أريد إبراز مجال عملي، ماهي الخطوات المناسبة؟',
     color: 'bg-rose-50 text-rose-600 border-rose-200',
   },
 ];
