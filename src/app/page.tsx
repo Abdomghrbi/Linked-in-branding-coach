@@ -112,8 +112,8 @@ export default function ChatPage() {
     }
   }, []);
 
-  const sendMessage = async (content: string) => {
-    if (!content.trim() || loading) return;
+  const sendMessage = async (content: string, imageBase64?: string) => {
+    if ((!content.trim() && !imageBase64) || loading) return;
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -128,7 +128,11 @@ export default function ChatPage() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatId, content: userMsg.content }),
+        body: JSON.stringify({ 
+          chatId, 
+          content: userMsg.content,
+          image: imageBase64 
+        }),
       });
 
       if (res.status === 401) {
@@ -253,7 +257,7 @@ export default function ChatPage() {
           {!hasMessages ? (
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-220px)] max-w-2xl mx-auto my-auto">
               <p className="text-gray-500 text-center mb-8 leading-relaxed text-sm md:text-base">
-                أساعدك بتحويل أفكارك الخام إلى محتوى مهني واضح وجذاب.
+                أساعدك بتحويل حسابك إلى علامة مهنية فريدة على لينكدان.
                 <br />
                 أخبرني عن تجربتك أو فكرتك، هيا نبدأ...
               </p>
