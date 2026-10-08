@@ -301,7 +301,7 @@ export async function POST(request: NextRequest) {
     }
 
     
-    const modelToUse = image ? 'llama-3.2-11b-vision-preview' : 'qwen/qwen3.8-27b';
+    const modelToUse = image ? 'llama-3.2-90b-vision-preview' : 'qwen/qwen3.8-27b';
 
     const completion = await groq.chat.completions.create({
       model: modelToUse,
