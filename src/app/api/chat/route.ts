@@ -127,6 +127,49 @@ ${feedbackContext}
 هدفُك هو مساعدة المستخدم بأسلوب مستشار سريع ومباشر لتحويل حسابه إلى علامة شخصية فريدة على لينكدإن.`;
 };
 
+// دالة معالجة الصور عبر Gemini API
+async function processImageWithGemini(imageBase64: string, promptText: string, systemPrompt: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY غير معرّف في متغيرات البيئة (.env.local)');
+  }
+
+  const cleanBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: {
+        parts: [{ text: systemPrompt }],
+      },
+      contents: [
+        {
+          parts: [
+            { text: promptText || 'حلل هذه الصورة وركّز على ما يفيد في بناء المحتوى والإنتاجية على لينكدإن.' },
+            {
+              inline_data: {
+                mime_type: 'image/jpeg',
+                data: cleanBase64,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.error?.message || 'فشل الاتصال بـ Gemini API');
+  }
+
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -231,6 +274,7 @@ export async function POST(request: NextRequest) {
       .eq('chat_id', currentChatId)
       .order('created_at', { ascending: true });
 
+    // حفظ رسالة المستخدم
     const { error: saveUserError } = await supabase
       .from('messages')
       .insert({
@@ -255,61 +299,41 @@ export async function POST(request: NextRequest) {
       recentFeedbacks || undefined
     );
 
-    const messagesForLLM: any[] = [
-      { role: 'system', content: systemPromptContent },
-    ];
-
-    if (historyMessages && historyMessages.length > 0) {
-      const maxHistory = 10;
-      const recentMessages = historyMessages.slice(-maxHistory);
-      
-      recentMessages.forEach((msg) => {
-        messagesForLLM.push({
-          role: msg.role === 'user' ? 'user' : 'assistant',
-          content: String(msg.content || ''),
-        });
-      });
-    }
-
-    const modelToUse = image 
-      ? 'llava-v1.5-7b-4bit' 
-      : 'qwen/qwen3.8-27b';
+    let aiResponse = '';
 
     if (image) {
-      const formattedImageUrl = image.startsWith('data:') 
-        ? image 
-        : `data:image/jpeg;base64,${image}`;
-
-      messagesForLLM.push({
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: content && content.trim() !== '' ? content : 'حلل هذه الصورة وركّز على ما يفيد في محتوى لينكدإن بناءً على سياق المحادثة.',
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: formattedImageUrl,
-            },
-          },
-        ],
-      });
+      aiResponse = await processImageWithGemini(image, content, systemPromptContent);
     } else {
+      const messagesForLLM: any[] = [
+        { role: 'system', content: systemPromptContent },
+      ];
+
+      if (historyMessages && historyMessages.length > 0) {
+        const maxHistory = 10;
+        const recentMessages = historyMessages.slice(-maxHistory);
+        
+        recentMessages.forEach((msg) => {
+          messagesForLLM.push({
+            role: msg.role === 'user' ? 'user' : 'assistant',
+            content: String(msg.content || ''),
+          });
+        });
+      }
+
       messagesForLLM.push({
         role: 'user',
         content: String(content),
       });
+
+      const completion = await groq.chat.completions.create({
+        model: 'qwen/qwen3.8-27b',
+        messages: messagesForLLM,
+        temperature: 0.3,
+        max_tokens: 500, 
+      });
+
+      aiResponse = completion.choices[0]?.message?.content || '';
     }
-
-    const completion = await groq.chat.completions.create({
-      model: modelToUse,
-      messages: messagesForLLM,
-      temperature: 0.3,
-      max_tokens: 500, 
-    });
-
-    const aiResponse = completion.choices[0]?.message?.content || '';
 
     let contentType = 'text';
     let generatedPost = null;
