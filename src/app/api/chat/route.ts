@@ -271,37 +271,36 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const modelToUse = image 
+      ? 'meta-llama/llama-4-scout-17b-16e-instruct' 
+      : 'qwen/qwen3.8-27b';
+
     if (image) {
       const formattedImageUrl = image.startsWith('data:') 
         ? image 
         : `data:image/jpeg;base64,${image}`;
 
-      const userContentArray: any[] = [
-        {
-          type: 'text',
-          text: content && content.trim() !== '' ? content : 'حلل هذه الصورة وركّز على ما يفيد في محتوى لينكدإن بناءً على سياق المحادثة.',
-        },
-        {
-          type: 'image_url',
-          image_url: {
-            url: formattedImageUrl,
-          },
-        },
-      ];
-
       messagesForLLM.push({
         role: 'user',
-        content: userContentArray,
+        content: [
+          {
+            type: 'text',
+            text: content && content.trim() !== '' ? content : 'حلل هذه الصورة وركّز على ما يفيد في محتوى لينكدإن بناءً على سياق المحادثة.',
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: formattedImageUrl,
+            },
+          },
+        ],
       });
     } else {
       messagesForLLM.push({
         role: 'user',
-        content: content,
+        content: String(content),
       });
     }
-
-    
-    const modelToUse = image ? 'openai/gpt-oss-120b' : 'qwen/qwen3.8-27b';
 
     const completion = await groq.chat.completions.create({
       model: modelToUse,
@@ -368,7 +367,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    
     const errorMessage = error?.message || (typeof error === 'string' ? error : 'خطأ غير معروف');
     
     return NextResponse.json(
@@ -376,5 +374,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-  }
-  
+}
