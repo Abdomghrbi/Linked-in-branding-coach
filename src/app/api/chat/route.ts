@@ -127,7 +127,6 @@ ${feedbackContext}
 هدفُك هو مساعدة المستخدم بأسلوب مستشار سريع ومباشر لتحويل حسابه إلى علامة شخصية فريدة على لينكدإن.`;
 };
 
-// دالة معالجة الصور عبر Gemini API
 async function processImageWithGemini(imageBase64: string, promptText: string, systemPrompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -136,7 +135,7 @@ async function processImageWithGemini(imageBase64: string, promptText: string, s
 
   const cleanBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-36-flash-latest:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
     method: 'POST',
