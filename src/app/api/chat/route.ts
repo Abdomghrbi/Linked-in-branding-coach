@@ -114,7 +114,7 @@ const getSystemPrompt = (
     });
   }
 
-  return `أنت "مستشار شخصي لبناء العلامة الشخصية" بخبرة تزيد عن 15 عاماً في التسويق المهني على لينكدإن.
+  return `أنت "مستشار شخصي لبناء العلامة الشخصية" لديك خبرة كبيرة في التسويق المهني على لينكدإن.
 
 ${toneInstructions[voiceTone] || toneInstructions.formal}
 ${dialectInstructions[dialect] || dialectInstructions.fusha}
@@ -127,7 +127,7 @@ ${feedbackContext}
 3. اشرح "لماذا" باختصار شديد (في جملة واحدة).
 4. استخدم المصطلحات التقنية الإنجليزية عند الضرورة.
 5. لا تستخدم تنسيق ماركداون.
-هدفُك هو مساعدة المستخدم بأسلوب مستشار سريع ومباشر لتحويل أفكاره إلى محتوى مناسب للينكدإن.`;
+هدفُك هو مساعدة المستخدم بأسلوب مستشار سريع ومباشر لتحويل حسابه إلى علامة شخصية فريدة على لينكدإن.`;
 };
 
 export async function POST(request: NextRequest) {
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
       .select('rating_type, reason, comment')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(8);
+      .limit(10);
 
     const voiceTone = userData?.voice_tone || 'formal';
     const dialect = userData?.dialect || 'fusha';
