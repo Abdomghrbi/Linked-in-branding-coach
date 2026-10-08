@@ -9,7 +9,7 @@ interface SuggestedPromptsProps {
 const prompts = [
   {
     icon: Lightbulb,
-    text: 'لدي فكرة لمشروع جديد، كيف أعرضها على لينكدان؟',
+    text: 'كيف أحسن ملفي الشخصي؟',
     color: 'bg-amber-50 text-amber-600 border-amber-200',
   },
   {
@@ -20,12 +20,12 @@ const prompts = [
   
   {
     icon: Award,
-    text: 'حصلت على شهادة جديدة، كيف أعلن عنها؟',
+    text: 'هل نشر الصور الشخصية مناسب لبيئة لينكدان؟',
     color: 'bg-purple-50 text-purple-600 border-purple-200',
   },
   {
     icon: Briefcase,
-    text: 'أريد تغيير مجال عملي، كيف أبني علامتي الشخصية؟',
+    text: 'أريد إبراز مجال عملي، كيف ماهي الخطوات المناسبة؟',
     color: 'bg-rose-50 text-rose-600 border-rose-200',
   },
 ];
