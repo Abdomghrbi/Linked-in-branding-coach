@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
     }
 
     const modelToUse = image 
-      ? 'meta-llama/llama-4-scout-17b-16e-instruct' 
+      ? 'openai/gpt-oss-120b' 
       : 'qwen/qwen3.8-27b';
 
     if (image) {
