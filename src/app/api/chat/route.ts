@@ -135,7 +135,7 @@ async function processImageWithGemini(imageBase64: string, promptText: string, s
 
   const cleanBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/​gemini-flash-latest-lite:generateContent?key=${apiKey}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
