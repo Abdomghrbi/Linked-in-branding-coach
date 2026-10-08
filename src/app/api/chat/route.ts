@@ -232,16 +232,16 @@ export async function POST(request: NextRequest) {
       .eq('chat_id', currentChatId)
       .order('created_at', { ascending: true });
 
-    // حفظ رسالة المستخدم
+
     const { error: saveUserError } = await supabase
-      .from('messages')
-      .insert({
-        chat_id: currentChatId,
-        role: 'user',
-        content: content || '[صورة مرفقة]',
-        content_type: image ? 'image' : 'text',
-        sequence_number: (historyMessages?.length || 0) + 1,
-      });
+  .from('messages')
+  .insert({
+    chat_id: currentChatId,
+    role: 'user',
+    content: content ? `${content} [صورة مرفقة]` : '[صورة مرفقة]',
+    content_type: 'text',
+    sequence_number: (historyMessages?.length || 0) + 1,
+  });
 
     if (saveUserError) {
       console.error('Error saving user message:', saveUserError);
