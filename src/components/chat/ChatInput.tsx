@@ -1,10 +1,10 @@
 'use client';
 
-import { Send, Loader2, Mic, Paperclip, AlertCircle } from 'lucide-react';
+import { Send, Loader2, Mic, Paperclip, AlertCircle, X, Image as ImageIcon } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, imageBase64?: string) => void;
   loading: boolean;
   disabled?: boolean;
 }
@@ -12,7 +12,6 @@ interface ChatInputProps {
 const MAX_LENGTH = 2000;
 const MIN_LENGTH = 1;
 
-// Prompt Injection
 const FORBIDDEN_PATTERNS = [
   /system\s*:/i,
   /ignore\s*previous/i,
@@ -24,14 +23,13 @@ const FORBIDDEN_PATTERNS = [
 ];
 
 function sanitizeInput(input: string): string {
-  
   return input.replace(/<[^>]*>/g, '').trim();
 }
 
-function validateInput(input: string): { valid: boolean; error?: string } {
+function validateInput(input: string, hasImage: boolean): { valid: boolean; error?: string } {
   const sanitized = sanitizeInput(input);
   
-  if (sanitized.length < MIN_LENGTH) {
+  if (!hasImage && sanitized.length < MIN_LENGTH) {
     return { valid: false, error: 'الرسالة فارغة' };
   }
   
@@ -50,8 +48,11 @@ function validateInput(input: string): { valid: boolean; error?: string } {
 
 export default function ChatInput({ onSend, loading, disabled }: ChatInputProps) {
   const [input, setInput] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -60,10 +61,34 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
     }
   }, [input]);
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setError('يرجى اختيار ملف صورة صالح (PNG, JPG, WEBP)');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+        setError(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSend = () => {
     setError(null);
     
-    const validation = validateInput(input);
+    const validation = validateInput(input, !!selectedImage);
     
     if (!validation.valid) {
       setError(validation.error || 'خطأ غير معروف');
@@ -71,8 +96,16 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
     }
 
     const sanitized = sanitizeInput(input);
-    onSend(sanitized);
+    
+    const base64Data = selectedImage ? selectedImage.split(',')[1] : undefined;
+
+    onSend(sanitized, base64Data);
+    
     setInput('');
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setError(null);
     
     if (textareaRef.current) {
@@ -92,7 +125,7 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
     setInput(value);
     
     if (error) {
-      const validation = validateInput(value);
+      const validation = validateInput(value, !!selectedImage);
       if (validation.valid) {
         setError(null);
       }
@@ -115,11 +148,49 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
         </div>
       )}
 
+      {/* Image Preview Card */}
+      {selectedImage && (
+        <div className="max-w-3xl mx-auto mb-2 flex items-center gap-2">
+          <div className="relative group inline-block">
+            <img
+              src={selectedImage}
+              alt="المعاينة"
+              className="w-16 h-16 object-cover rounded-xl border border-gray-200 shadow-sm"
+            />
+            <button
+              type="button"
+              onClick={handleRemoveImage}
+              className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-md transition-colors"
+              title="إزالة"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <span className="text-xs text-gray-400">تم إرفاق الصورة جاهزة للإرسال</span>
+        </div>
+      )}
+
       <div className="max-w-3xl mx-auto flex items-center gap-2">
-        {/* Attachments */}
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={handleImageSelect}
+          className="hidden"
+        />
+
+        {/* Attachments / Paperclip Button */}
         <button 
-          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
-          title="إرفاق ملف"
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || loading}
+          className={`p-2 rounded-lg transition-colors shrink-0 ${
+            selectedImage 
+              ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
+              : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+          }`}
+          title="إرفاق صورة"
         >
           <Paperclip className="w-5 h-5" />
         </button>
@@ -131,7 +202,7 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
             value={input}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder="اكتب رسالتك هنا..."
+            placeholder={selectedImage ? "اكتب سؤالك عن الصورة (اختياري)..." : "اكتب رسالتك هنا..."}
             rows={1}
             disabled={disabled || loading}
             className={`w-full resize-none rounded-xl border-0 bg-gray-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:bg-white disabled:bg-gray-200 disabled:text-gray-400 min-h-[44px] max-h-[120px] ${
@@ -156,6 +227,7 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
 
         {/* Voice */}
         <button 
+          type="button"
           className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
           title="صوتي"
         >
@@ -164,8 +236,9 @@ export default function ChatInput({ onSend, loading, disabled }: ChatInputProps)
 
         {/* Send */}
         <button
+          type="button"
           onClick={handleSend}
-          disabled={!input.trim() || loading || disabled || isOverLimit}
+          disabled={(!input.trim() && !selectedImage) || loading || disabled || isOverLimit}
           className="p-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg transition-colors shadow-sm shrink-0"
         >
           {loading ? (
