@@ -301,7 +301,7 @@ export async function POST(request: NextRequest) {
     }
 
     
-    const modelToUse = image ? 'meta-llamallama-4-scout-17b-16e-instruct' : 'qwen/qwen3.8-27b';
+    const modelToUse = image ? 'openai/gpt-oss-120b' : 'qwen/qwen3.8-27b';
 
     const completion = await groq.chat.completions.create({
       model: modelToUse,
