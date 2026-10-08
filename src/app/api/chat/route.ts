@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
     }
 
     const modelToUse = image 
-      ? 'openai/gpt-oss-120b' 
+      ? 'llava-v1.5-7b-4bit' 
       : 'qwen/qwen3.8-27b';
 
     if (image) {
