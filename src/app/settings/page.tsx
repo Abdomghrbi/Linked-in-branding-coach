@@ -243,17 +243,6 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">قواعد خاصة للمساعد الذكي</label>
-            <textarea
-              value={form.custom_rules}
-              onChange={(e) => setForm({ ...form, custom_rules: e.target.value })}
-              rows={3}
-              placeholder="اكتب كل قاعدة في سطر مستقِل (مثال: تجنب النجوم، ركز على الأمثلة...)"
-              className="w-full p-3.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-            />
-          </div>
-
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             {saved && (
               <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
