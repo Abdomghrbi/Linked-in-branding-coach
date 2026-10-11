@@ -9,23 +9,23 @@ interface SuggestedPromptsProps {
 const prompts = [
   {
     icon: Lightbulb,
-    text: 'كيف أحسن ملفي الشخصي؟',
+    text: 'عندي فكرة لمنشور، ساعدني بتلخيصها',
     color: 'bg-amber-50 text-amber-600 border-amber-200',
   },
   {
     icon: TrendingUp,
-    text: 'حضرت مؤتمر تقني، ساعدني أكتب عن التجربة',
+    text: 'حضرت مؤتمر تقني، كيف أكتب عن التجربة',
     color: 'bg-blue-50 text-blue-600 border-blue-200',
   },
   
   {
     icon: Award,
-    text: 'هل نشر الصور الشخصية مناسب لبيئة لينكدان؟',
+    text: 'هل المحتوى الكوميدي مناسب لبيئة لينكدان؟',
     color: 'bg-purple-50 text-purple-600 border-purple-200',
   },
   {
     icon: Briefcase,
-    text: 'أريد إبراز مجال عملي، ماهي الخطوات المناسبة؟',
+    text: 'أريد إبراز مجال عملي، ماهي الخطوات الصحيحة؟',
     color: 'bg-rose-50 text-rose-600 border-rose-200',
   },
 ];
